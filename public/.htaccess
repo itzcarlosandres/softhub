@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /programas/public/
+    # RewriteBase /programas/public/
     
     # Sitemap XML
     RewriteRule ^sitemap\.xml$ sitemap.xml.php [L]
