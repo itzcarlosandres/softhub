@@ -185,4 +185,8 @@ class HomeController extends Controller
         ]);
     }
 
+    public function demoHeaders()
+    {
+        return $this->view('pages/demo_headers');
+    }
 }

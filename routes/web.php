@@ -9,7 +9,12 @@ $router->get('/', 'HomeController@index');
 $router->get('/about', 'PageController@about');
 $router->get('/terms', 'PageController@terms');
 $router->get('/privacy', 'PageController@privacy');
+$router->get('/demo-heroes', 'PageController@demoHeroes'); // Ruta de Demo para Heroes
+$router->get('/demo-software', 'PageController@demoSoftware'); // Ruta de Demo para Software Catalog
 $router->get('/contact', 'HomeController@contact');
+$router->get('/demo-footers', 'PageController@demoFooters');
+$router->get('/demo-admin', 'PageController@demoAdmin');
+$router->get('/demo-titles', 'PageController@demoTitles');
 
 // Software Routes
 $router->get('/software', 'SoftwareController@index');
