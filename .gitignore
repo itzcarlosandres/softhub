@@ -1,38 +1,22 @@
-# Dependencies
-/vendor/
-/node_modules/
+# Logs
+storage/logs/*.log
+*.log
+
+# Uploads
+public/uploads/*
+!public/uploads/.gitkeep
 
 # Environment
 .env
 .env.backup
 .env.production
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
+# System and IDE
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
 
-# Logs
-/storage/logs/*.log
-*.log
-
-# Uploads
-/public/uploads/*
-!/public/uploads/.gitkeep
-
-# Cache
-/storage/cache/*
-!/storage/cache/.gitkeep
-
-# Composer
-composer.phar
-composer.lock
-
-# Installation
-install.php
+# Docker Local (Opcional si usas localmente)
+Dockerfile
+.dockerignore
