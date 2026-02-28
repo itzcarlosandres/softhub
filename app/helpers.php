@@ -5,15 +5,20 @@
 
 if (!function_exists('url')) {
     function url($path = '') {
-        // Obtener la URL base del .env
         $appUrl = env('APP_URL', '');
         
-        // Si APP_URL está definido, usarlo
         if ($appUrl) {
-            return rtrim($appUrl, '/') . ($path ? '/' . ltrim($path, '/') : '');
+            $baseUrl = rtrim($appUrl, '/');
+            $cleanPath = ltrim($path, '/');
+            
+            // Si el path ya empieza con public/, lo limpiamos porque ya estamos dentro en CyberPanel
+            if (strpos($cleanPath, 'public/') === 0) {
+                $cleanPath = substr($cleanPath, 7);
+            }
+            
+            return $baseUrl . ($cleanPath ? '/' . $cleanPath : '');
         }
         
-        // Fallback: detectar automáticamente
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         return $protocol . $host . ($path ? '/' . ltrim($path, '/') : '');

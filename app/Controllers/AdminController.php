@@ -539,9 +539,19 @@ class AdminController extends Controller
             }
             
             // Validar tipo de archivo
-            $allowedTypes = ['image/x-icon', 'image/png', 'image/svg+xml'];
-            if (!in_array($_FILES['site_favicon']['type'], $allowedTypes)) {
-                $_SESSION['error'] = 'Formato de favicon no válido. Use ICO, PNG o SVG';
+            $allowedTypes = [
+                'image/x-icon', 
+                'image/vnd.microsoft.icon', 
+                'image/png', 
+                'image/svg+xml', 
+                'image/ico', 
+                'image/icon'
+            ];
+            $extension = strtolower(pathinfo($_FILES['site_favicon']['name'], PATHINFO_EXTENSION));
+            $allowedExtensions = ['ico', 'png', 'svg'];
+
+            if (!in_array($_FILES['site_favicon']['type'], $allowedTypes) && !in_array($extension, $allowedExtensions)) {
+                $_SESSION['error'] = 'Formato de favicon no válido. Use ICO, PNG o SVG (Detectado: ' . $_FILES['site_favicon']['type'] . ')';
                 $this->redirect('/admin/settings');
             }
             
@@ -620,10 +630,10 @@ class AdminController extends Controller
 
         if (move_uploaded_file($file['tmp_name'], $destination)) {
             
-            // 🖼️ OPTIMIZACIÓN AUTOMÁTICA DE IMÁGENES
+            // 🖼️ OPTIMIZACIÓN AUTOMÁTICA DE IMÁGENES (Saltar para branding - Logo/Favicon)
             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             
-            if (in_array($extension, $imageExtensions)) {
+            if (in_array($extension, $imageExtensions) && $folder !== 'branding') {
                 try {
                     // Importar ImageOptimizer
                     require_once __DIR__ . '/../Helpers/ImageOptimizer.php';
