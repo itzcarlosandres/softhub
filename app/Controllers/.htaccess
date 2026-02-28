@@ -1,0 +1,2 @@
+# Deshabilitar caché de PHP
+php_flag opcache.enable Off
