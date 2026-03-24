@@ -555,15 +555,17 @@ function addLink() {
     
     if (!rawUrls) return;
     
-    const urlArray = rawUrls.split(/[\s,]+/);
+    // Separamos por comas, NO por espacios para permitir "URL #tag"
+    const urlArray = rawUrls.split(/[,]+/);
     
-    urlArray.forEach(url => {
-        if (!url.trim()) return;
+    urlArray.forEach(rawUrl => {
+        const url = rawUrl.trim();
+        if (!url) return;
         const cleanUrl = url.split('#')[0].trim();
         const os = detectOS(url);
         const config = getOSConfig(os);
         
-        links.push({ url: cleanUrl, os, config, original: url });
+        links.push({ url: cleanUrl, os: os, config: config, original: url });
     });
     
     input.value = '';
@@ -593,7 +595,7 @@ function renderLinks() {
             </div>
             <div class="flex-1 min-w-0">
                 <p class="font-bold text-[11px] text-gray-300 uppercase tracking-widest">${link.config.name}</p>
-                <p class="text-[10px] text-gray-500 font-mono truncate" title="${link.url}">${link.url.replace(/^https?:\\/\\//i, '')}</p>
+                <p class="text-[10px] text-gray-500 font-mono truncate" title="${link.url}">${link.url.replace(/^https?:\/\//i, '')}</p>
             </div>
             <button type="button" onclick="removeLink(${index})" class="w-7 h-7 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors flex items-center justify-center" title="Quitar">
                 <i class="fas fa-times"></i>
@@ -603,7 +605,7 @@ function renderLinks() {
 }
 
 function updateHiddenField() {
-    const code = links.map(link => link.original).join('\\n');
+    const code = links.map(link => link.original).join('\n');
     document.getElementById('downloadUrlsHidden').value = code;
 }
 

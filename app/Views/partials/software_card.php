@@ -1,7 +1,18 @@
 <?php
 // Variables expected: $soft, $showIcon, $showBadges, $showDesc, $showRating, $showDownloads, $showPrice, $showButton, $isTrending
-$iconPath = !empty($soft['icon']) ? $soft['icon'] : $soft['image'];
-$isNew = strtotime($soft['created_at']) > strtotime('-7 days');
+$iconPath = !empty($soft['icon']) ? $soft['icon'] : ($soft['image'] ?? '');
+$isNew = !empty($soft['created_at']) ? strtotime($soft['created_at']) > strtotime('-7 days') : false;
+
+$isUpdated = false;
+if (!empty($soft['updated_at'])) {
+    $updatedTime = strtotime($soft['updated_at']);
+    $createdTime = !empty($soft['created_at']) ? strtotime($soft['created_at']) : 0;
+    // Muestra "Actualizado" si fue modificado en las últimas 48 hrs
+    if ($updatedTime > strtotime('-48 hours') && ($updatedTime - $createdTime > 60)) {
+        $isUpdated = true;
+    }
+}
+
 $isPremium = !empty($soft['price']) && $soft['price'] > 0;
 // Default to blue if $color is not provided
 $color = $color ?? 'blue';
@@ -102,12 +113,20 @@ $color = $color ?? 'blue';
             </div>
             <?php endif; ?>
             
-            <!-- Trending Badge (si aplica) -->
-            <?php if ($isTrending && $showBadges): ?>
-                <div class="absolute top-3 left-3">
-                    <span class="px-2 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                        <i class="fas fa-fire text-xs"></i> HOT
-                    </span>
+            <!-- Floating Badges (Left) -->
+            <?php if ($showBadges && ($isTrending || $isUpdated)): ?>
+                <div class="absolute top-3 left-3 flex flex-col gap-2 z-20 pointer-events-none">
+                    <?php if ($isUpdated): ?>
+                        <span class="px-2 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-[10px] font-extrabold shadow-lg flex items-center gap-1 uppercase tracking-wide">
+                            <i class="fas fa-sync-alt text-[10px]"></i> ACTUALIZADO
+                        </span>
+                    <?php endif; ?>
+                    
+                    <?php if ($isTrending): ?>
+                        <span class="px-2 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-[10px] font-extrabold shadow-lg flex items-center gap-1 uppercase tracking-wide">
+                            <i class="fas fa-fire text-[10px]"></i> HOT
+                        </span>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
