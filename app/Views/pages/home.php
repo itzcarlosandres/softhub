@@ -3,138 +3,231 @@ ob_start();
 
 ?>
 
-<!-- Hero Section (Glassmorphism & Blur) -->
-<div class="hidden md:block container mx-auto px-4 pt-0 pb-12">
-    <section class="relative rounded-3xl overflow-hidden bg-white dark:bg-gray-800 group transition-colors duration-300">
-        
-        <!-- Hero Background -->
-        <div class="relative bg-white dark:bg-gray-800 min-h-[300px] md:min-h-[500px] lg:min-h-[550px] py-16 md:pb-24 md:pt-0 flex items-center justify-center overflow-hidden transition-colors duration-300 home-hero-main">
-            <!-- Background Elements -->
-            <div class="absolute inset-0 bg-white dark:bg-gray-800 z-0 transition-colors duration-300">
-                <!-- Blobs (Subtle) -->
-                <div class="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-blue-400/5 rounded-full blur-[120px]"></div>
-                <div class="absolute -bottom-[20%] -left-[10%] w-[500px] h-[500px] bg-purple-400/5 rounded-full blur-[120px]"></div>
-                
-                <?php if ($heroDotsActive): ?>
-                <!-- Dots Pattern -->
-                <div class="absolute inset-0 z-0 opacity-[0.15] dark:opacity-30" 
-                     style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 24px 24px;"></div>
-                <?php endif; ?>
+<!-- Premium Custom Hero Section -->
+<style>
+  .hero-section-custom {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    background-color: #1e3a8a; /* Blue 900 */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-                <?php if ($heroSpotlightActive): ?>
-                <!-- Spotlight Effect -->
-                <div id="hero-spotlight" class="absolute inset-0 z-10 pointer-events-none transition-opacity duration-500 opacity-0 md:opacity-100"
-                     style="background: radial-gradient(600px circle at 50% 50%, rgba(59, 130, 246, 0.08), transparent 80%);"></div>
-                <?php endif; ?>
-            </div>
+  /* Vector Shapes with CSS */
+  .shape-green {
+    position: absolute; top: -50%; left: -20%; width: 60%; height: 200%;
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); /* Blue 700 to 500 */
+    transform: rotate(20deg); box-shadow: 10px 0 50px rgba(0,0,0,0.3);
+    z-index: 1; transition: transform 0.1s ease-out;
+  }
 
-            <!-- Content -->
-            <div class="relative z-20 container mx-auto px-6 text-center max-w-4xl">
-                <span class="inline-block py-1 px-3 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-wide uppercase mb-6 shadow-sm">
+  .shape-dark-blue {
+    position: absolute; bottom: -40%; left: -10%; width: 50%; height: 80%;
+    background: #172554; /* Blue 950 */
+    transform: rotate(-12deg); border-radius: 60px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.2); z-index: 2; transition: transform 0.1s ease-out;
+  }
+
+  .shape-wave-right {
+    position: absolute; bottom: -60%; right: -20%; width: 70%; height: 150%;
+    background: #2563eb; /* Blue 600 */
+    border-radius: 50%; transform: rotate(-35deg); z-index: 1;
+    transition: transform 0.1s ease-out;
+  }
+
+  .shape-gradient-right {
+    position: absolute; top: 0; right: 0; width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, #1e3a8a 100%); z-index: 2;
+  }
+
+  /* Content Overlay */
+  .content-wrapper-custom {
+    position: relative; z-index: 10; width: 100%; max-width: 900px; padding: 0 40px;
+    display: flex; flex-direction: column; align-items: flex-start;
+  }
+
+  .hero-title-custom {
+    color: #ffffff !important; font-size: 3.2rem; font-weight: 700; line-height: 1.25;
+    letter-spacing: -0.5px; margin-bottom: 40px; text-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .typewriter-cursor {
+    animation: blink 1s infinite;
+    margin-left: 2px;
+    font-weight: 300;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Search Bar */
+  .search-wrapper-custom { width: 100%; max-width: 820px; }
+  .search-box-custom {
+    display: flex; align-items: center; background-color: #ffffff;
+    padding: 12px 20px 12px 24px; border-radius: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  .search-input-custom {
+    flex: 1; border: none; outline: none; font-size: 1.1rem; font-family: inherit;
+    color: #333; background: transparent; width: 100%;
+  }
+  .search-input-custom::placeholder { color: #929ba3; font-weight: 500; }
+  .search-button-custom {
+    background: transparent; border: none; cursor: pointer; color: #55626a;
+    display: flex; align-items: center; justify-content: center; padding: 4px;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  .search-button-custom:hover { color: #1a567c; transform: scale(1.1); }
+
+  .dark .search-box-custom { background-color: #1f2937; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+  .dark .search-input-custom { color: #ffffff; }
+  .dark .search-input-custom::placeholder { color: #9ca3af; }
+  .dark .search-button-custom { color: #9ca3af; }
+  .dark .search-button-custom:hover { color: #60a5fa; }
+
+  @media (max-width: 768px) {
+    .hero-title-custom { font-size: 2.2rem; margin-bottom: 30px; }
+    .shape-green { width: 80%; left: -30%; }
+    .content-wrapper-custom { padding: 0 20px; }
+    .search-box-custom { padding: 8px 16px 8px 20px; }
+    .hero-section-custom { height: 400px; }
+  }
+</style>
+
+<div class="hidden md:block w-full pt-0 pb-12">
+    <section class="hero-section-custom shadow-xl">
+        <!-- Background Shapes -->
+        <div class="shape-green"></div>
+        <div class="shape-dark-blue"></div>
+        <div class="shape-wave-right"></div>
+        <div class="shape-gradient-right"></div>
+
+        <!-- Content -->
+        <div class="content-wrapper-custom">
+            
+            <?php if (!empty($heroSubtitleSetting)): ?>
+                <span class="inline-block py-1 px-3 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold tracking-wide uppercase mb-6 shadow-sm">
+                    <i class="fas fa-bolt mr-1"></i> <?= htmlspecialchars($heroSubtitleSetting) ?>
+                </span>
+            <?php else: ?>
+                <span class="inline-block py-1 px-3 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold tracking-wide uppercase mb-6 shadow-sm">
                     <i class="fas fa-bolt mr-1"></i> Actualizado en tiempo real
                 </span>
-                <?php if ($heroDynamicActive): ?>
-                    <div class="font-outfit text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight tracking-tight transition-colors flex flex-wrap items-center justify-center gap-x-2 md:gap-x-4">
-                        <span class="whitespace-nowrap"><?= htmlspecialchars($heroDynamicPrefix) ?></span>
-                        <div class="inline-flex items-center min-h-[1.2em]">
-                            <span id="typewriter" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400"></span>
-                            <span class="typewriter-cursor text-blue-600 dark:text-blue-400 ml-1">|</span>
-                        </div>
-                        <span class="whitespace-nowrap"><?= htmlspecialchars($heroDynamicSuffix) ?></span>
-                    </div>
-                    <style>
-                        .typewriter-cursor {
-                            animation: blink 1s infinite;
-                            margin-left: 2px;
-                            font-weight: 300;
-                        }
-                        @keyframes blink {
-                            0%, 100% { opacity: 1; }
-                            50% { opacity: 0; }
-                        }
-                        @keyframes bounce-x {
-                            0%, 100% { transform: translateX(0); }
-                            50% { transform: translateX(5px); }
-                        }
-                        .animate-bounce-x {
-                            animation: bounce-x 1s infinite;
-                        }
-                    </style>
-                <?php elseif (!empty($heroTitleSetting)): 
-                    // Parse **text** to gradient span
-                    $safeTitle = htmlspecialchars($heroTitleSetting);
-                    $parsedTitle = preg_replace(
-                        '/\*\*(.*?)\*\*/', 
-                        '<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">$1</span>', 
-                        $safeTitle
-                    );
-                ?>
-                    <h1 class="font-outfit text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight tracking-tight transition-colors">
-                        <?= $parsedTitle ?>
-                    </h1>
-                <?php else: ?>
-                    <h1 class="font-outfit text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight tracking-tight transition-colors">
-                        Descubre Software <br>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Premium & Verificado</span>
-                    </h1>
-                <?php endif; ?>
+            <?php endif; ?>
 
-                <?php if (!empty($heroSubtitleSetting)): ?>
-                    <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto transition-colors"><?= htmlspecialchars($heroSubtitleSetting) ?></p>
-                <?php endif; ?>
-                
-                <!-- Hero Search Bar - Simple Search -->
-                <div class="max-w-2xl mx-auto mb-0 md:mb-12 relative z-50">
-                    <form action="<?= url('search') ?>" method="GET" id="live-search-form" class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400 dark:text-gray-500 text-lg group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors"></i>
-                        </div>
+            <?php if ($heroDynamicActive): ?>
+                <h1 class="hero-title-custom flex flex-wrap items-center gap-2">
+                    <span class="whitespace-nowrap"><?= htmlspecialchars($heroDynamicPrefix) ?></span>
+                    <span class="inline-flex items-center">
+                        <span id="typewriter" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"></span><span class="typewriter-cursor text-white">|</span>
+                    </span>
+                    <span class="whitespace-nowrap"><?= htmlspecialchars($heroDynamicSuffix) ?></span>
+                </h1>
+            <?php elseif (!empty($heroTitleSetting)): 
+                $safeTitle = htmlspecialchars($heroTitleSetting);
+                $parsedTitle = preg_replace(
+                    '/\*\*(.*?)\*\*/', 
+                    '<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">$1</span>', 
+                    $safeTitle
+                );
+            ?>
+                <h1 class="hero-title-custom"><?= $parsedTitle ?></h1>
+            <?php else: ?>
+                <h1 class="hero-title-custom">
+                    Tus mejores Aplicaciones<br>en un solo lugar<span class="typewriter-cursor text-white">|</span>
+                </h1>
+            <?php endif; ?>
+            
+            <!-- Search Bar -->
+            <div class="search-wrapper-custom relative z-50">
+                <form action="<?= url('search') ?>" method="GET" id="live-search-form" class="relative group">
+                    <div class="search-box-custom relative">
                         <input type="text" 
                                name="q"
                                id="search-input-live"
-                               class="block w-full pl-14 pr-6 py-5 bg-white dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600/50 rounded-full shadow-md dark:shadow-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:ring-blue-500/40 dark:focus:border-blue-400 text-lg transition-all duration-300 hover:shadow-lg dark:hover:bg-gray-700"
-                               placeholder="Busca tu software favorito..." 
+                               class="search-input-custom"
+                               placeholder="¿Qué quieres buscar?" 
                                autocomplete="off"
                                required>
-                    <div id="search-loading" class="absolute inset-y-0 right-0 pr-6 flex items-center hidden">
-                            <i class="fas fa-spinner fa-spin text-blue-500 dark:text-blue-400"></i>
+                        <button type="submit" class="search-button-custom" aria-label="Buscar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                        <div id="search-loading" class="absolute inset-y-0 right-14 pr-2 flex items-center hidden">
+                            <i class="fas fa-spinner fa-spin text-blue-500"></i>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
         
-        <!-- Glass Stats Bar (Bottom) - Hidden on mobile -->
-        <div class="hidden md:block absolute bottom-0 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 md:p-6 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto divide-x divide-gray-200/50 dark:divide-gray-700/50">
+        <!-- Glass Stats Bar (Bottom) - Retained -->
+        <div class="absolute bottom-0 left-0 right-0 bg-white/10 dark:bg-gray-900/40 backdrop-blur-xl border-t border-white/10 p-4 md:p-6 shadow-lg transition-colors duration-300 z-20">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto divide-x divide-white/20">
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white transition-colors"><?= number_format($totalSoftware) ?></div>
-                    <div class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-cube text-blue-500 dark:text-blue-400"></i> Programas
+                    <div class="text-2xl font-bold text-white"><?= number_format($totalSoftware) ?></div>
+                    <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+                        <i class="fas fa-cube text-blue-400"></i> Programas
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 transition-colors"><?= $updatesToday > 0 ? '+' . $updatesToday : 'Diarias' ?></div>
-                    <div class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-bolt text-yellow-500 dark:text-yellow-400"></i> Actualizaciones
+                    <div class="text-2xl font-bold text-blue-400"><?= $updatesToday > 0 ? '+' . $updatesToday : 'Diarias' ?></div>
+                    <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+                        <i class="fas fa-bolt text-purple-400"></i> Actualizaciones
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-white transition-colors">100%</div>
-                    <div class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-check-circle text-green-500 dark:text-green-400"></i> Verificado
+                    <div class="text-2xl font-bold text-white">100%</div>
+                    <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+                        <i class="fas fa-check-circle text-blue-300"></i> Verificado
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400 transition-colors">24/7</div>
-                    <div class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-headset text-purple-500 dark:text-purple-400"></i> Soporte
+                    <div class="text-2xl font-bold text-purple-400">24/7</div>
+                    <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+                        <i class="fas fa-headset text-blue-400"></i> Soporte
                     </div>
                 </div>
             </div>
         </div>
     </section>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const heroSection = document.querySelector('.hero-section-custom');
+  if (heroSection) {
+    const greenShape = document.querySelector('.shape-green');
+    const darkBlueShape = document.querySelector('.shape-dark-blue');
+    const rightWave = document.querySelector('.shape-wave-right');
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let rafId = null;
+
+    heroSection.addEventListener('mousemove', (e) => {
+      const rect = heroSection.getBoundingClientRect();
+      mouseX = (e.clientX - rect.left) / rect.width - 0.5;
+      mouseY = (e.clientY - rect.top) / rect.height - 0.5;
+
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          if(greenShape) greenShape.style.transform = `rotate(20deg) translate(${mouseX * -40}px, ${mouseY * -40}px)`;
+          if(darkBlueShape) darkBlueShape.style.transform = `rotate(-12deg) translate(${mouseX * 25}px, ${mouseY * 25}px)`;
+          if(rightWave) rightWave.style.transform = `rotate(-35deg) translate(${mouseX * -20}px, ${mouseY * -20}px)`;
+          rafId = null;
+        });
+      }
+    });
+  }
+});
+</script>
 
 <!-- Main Content -->
 <div class="container mx-auto px-4 py-12">
