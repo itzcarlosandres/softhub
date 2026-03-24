@@ -101,12 +101,20 @@ ob_start();
                      <?= htmlspecialchars($software['short_description']) ?>
                  </p>
                  
-                 <div class="space-y-6 max-w-md mx-auto lg:mx-0 w-full">
+                 <div class="space-y-4 max-w-md mx-auto lg:mx-0 w-full">
                      <a href="<?= url('download/' . $software['id']) ?>" class="block w-full bg-black dark:bg-blue-600 text-white text-center py-5 rounded-2xl font-bold text-xl hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-xl shadow-gray-300 dark:shadow-none transform hover:-translate-y-1">
                          <i class="fas fa-download mr-2"></i> Descargar Gratis
                      </a>
                      
-                     <!-- Info removed -->
+                     <?php if (!empty($software['price']) && $software['price'] > 0): ?>
+                     <a href="<?= !empty($software['buy_url']) ? htmlspecialchars($software['buy_url']) : '#' ?>" target="_blank" class="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-4 rounded-2xl font-bold text-lg hover:from-purple-500 hover:to-indigo-500 transition shadow-lg shadow-purple-500/20 border border-purple-400/30 transform hover:-translate-y-1">
+                         <div class="flex items-center justify-center gap-2">
+                             <i class="fas fa-shopping-cart"></i>
+                             <span>Comprar Licencia Premium</span>
+                             <span class="bg-black/20 text-white px-2.5 py-1 rounded shadow-inner text-sm ml-2 border border-white/10">$<?= number_format($software['price'], 2) ?></span>
+                         </div>
+                     </a>
+                     <?php endif; ?>
                  </div>
             </div>
             
@@ -217,18 +225,18 @@ ob_start();
                 
                 <div class="space-y-4">
                     <?php foreach(array_slice($versions, 0, 3) as $ver): ?>
-                        <div class="flex items-center justify-between p-6 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-black dark:hover:border-white transition group cursor-pointer bg-white dark:bg-gray-800">
-                            <div class="flex items-center gap-6">
-                                <div class="font-bold text-2xl text-gray-900 dark:text-white min-w-[140px] whitespace-nowrap transition-colors">v<?= $ver['version_number'] ?></div>
+                        <a href="<?= url('download/' . $software['id'] . '?v=' . urlencode(ltrim($ver['version_number'], 'vV'))) ?>" class="flex items-center justify-between p-6 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-black dark:hover:border-white transition group cursor-pointer bg-white dark:bg-gray-800 shadow-sm hover:shadow-md">
+                            <div class="flex items-center gap-6 text-left">
+                                <div class="font-bold text-2xl text-gray-900 dark:text-white min-w-[140px] whitespace-nowrap transition-colors">v<?= ltrim($ver['version_number'], 'vV') ?></div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide border-l border-gray-200 dark:border-gray-700 pl-6 transition-colors">
                                     Released on <br>
                                     <span class="text-gray-900 dark:text-gray-200 transition-colors"><?= date('M d, Y', strtotime($ver['release_date'])) ?></span>
                                 </div>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 cursor-pointer shadow-lg">
+                            <div class="w-10 h-10 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 shadow-lg shrink-0">
                                 <i class="fas fa-download text-sm"></i>
                             </div>
-                        </div>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </section>

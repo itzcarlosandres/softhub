@@ -112,6 +112,44 @@ ob_start();
             </div>
         </div>
         
+        <!-- Opciones Premium / Compras -->
+        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden bg-gradient-to-br from-gray-900 to-purple-900/10">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
+            
+            <h3 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
+                <i class="fas fa-crown text-purple-400"></i> Monetización y Compras
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        Precio del Software
+                        <span class="bg-purple-500/20 text-purple-400 text-[9px] px-2 py-0.5 rounded border border-purple-500/30 uppercase">Opcional</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-3 text-gray-500 font-bold">$</span>
+                        <input type="number" step="0.01" min="0" name="price" value="<?= htmlspecialchars($software['price'] ?? '') ?>"
+                               class="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder-gray-600"
+                               placeholder="0.00">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        Enlace / URL de la Tienda
+                        <span class="bg-purple-500/20 text-purple-400 text-[9px] px-2 py-0.5 rounded border border-purple-500/30 uppercase">Opcional</span>
+                    </label>
+                    <input type="url" name="buy_url" value="<?= htmlspecialchars($software['buy_url'] ?? '') ?>"
+                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder-gray-600"
+                           placeholder="Ej: https://paypal.com/... o https://stripe.com/...">
+                </div>
+                <!-- Helper text -->
+                <div class="md:col-span-2 text-xs text-gray-500 bg-black/20 p-3 rounded-lg border border-white/5">
+                    <i class="fas fa-info-circle mr-1 text-purple-400"></i> Si el precio es mayor a cero, se habilitará automáticamente el botón "Prémium" en la página pública del software.
+                </div>
+            </div>
+        </div>
+        
         <!-- Descripción -->
         <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
              <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>

@@ -171,6 +171,8 @@ class AdminController extends Controller
             'license' => $_POST['license'] ?? 'free',
             'operating_system' => $platforms,
             'file_size' => $_POST['file_size'] ?? '',
+            'price' => isset($_POST['price']) && $_POST['price'] !== '' ? (float)$_POST['price'] : 0.00,
+            'buy_url' => $_POST['buy_url'] ?? '',
             'download_url' => '', // Ya no se usa, se guardan en download_links
             'requirements' => $_POST['requirements'] ?? '',
             'status' => 'approved', // Publicación directa
@@ -267,6 +269,8 @@ class AdminController extends Controller
             'license' => $_POST['license'] ?? 'free',
             'operating_system' => $_POST['operating_system'] ?? '',
             'file_size' => $_POST['file_size'] ?? '',
+            'price' => isset($_POST['price']) && $_POST['price'] !== '' ? (float)$_POST['price'] : 0.00,
+            'buy_url' => $_POST['buy_url'] ?? '',
             'download_url' => $_POST['download_url'] ?? '',
             'requirements' => $_POST['requirements'] ?? '',
             'status' => 'approved', // Siempre publicado
