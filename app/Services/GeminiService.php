@@ -18,8 +18,8 @@ class GeminiService
      */
     private function getApiKey()
     {
-        // API Key hardcoded por solicitud del usuario
-        return 'AIzaSyDRNUFFwaVBL-BRyJKbFm1SVOaW1J9iUgw';
+        // Retornar la API Key desde el archivo .env o variable de entorno
+        return getenv('GEMINI_API_KEY') ?: $_ENV['GEMINI_API_KEY'] ?? '';
     }
     
     /**
@@ -208,6 +208,29 @@ class GeminiService
         $prompt .= "2. Usa <ul> y <li> para las listas.\n";
         $prompt .= "3. Separa por 'Requisitos Mínimos' y 'Requisitos Recomendados'.\n";
         $prompt .= "4. Usa ENTIDADES HTML para caracteres especiales.\n";
+        
+        return $this->generateContent($prompt);
+    }
+    
+    /**
+     * Generar artículo de blog optimizado para SEO
+     */
+    public function generateBlogPost($title, $category = '')
+    {
+        $prompt = "Escribe un artículo de blog completo, detallado y altamente optimizado para SEO sobre el siguiente tema: '{$title}'.\n";
+        
+        if (!empty($category)) {
+            $prompt .= "El artículo pertenece a la categoría: '{$category}'.\n";
+        }
+        
+        $prompt .= "\nREGLAS ESTRICTAS PARA EL FORMATo HTML:\n";
+        $prompt .= "1. El artículo entero debe estar formateado en HTML limpio y debe tener una longitud aproximada de 500 a 600 palabras.\n";
+        $prompt .= "2. Utiliza etiquetas <h2> para los subtítulos principales y <h3> para secciones secundarias si son necesarias. (NO uses <h1>, ya que el título de la página lo proporciona el sistema).\n";
+        $prompt .= "3. Utiliza párrafos con <p>, listas con <ul> y <li>, y resalta (negrita) términos importantes o palabras clave relacionadas al tema usando <strong>.\n";
+        $prompt .= "4. Estructura el artículo así: una introducción atractiva de 1 o 2 párrafos, luego 3 o 4 secciones de desarrollo con sus respectivos <h2>, y finalmente una breve conclusión.\n";
+        $prompt .= "5. Mantén un tono profesional, informativo y atractivo para mantener enganchado al lector.\n";
+        $prompt .= "6. CRÍTICAMENTE IMPORTANTE: Absolutamente todos los acentos y letras especiales (como ñ) deben estar convertidos a Entidades HTML (por ejemplo: 'f&aacute;cil', 'soluci&oacute;n', 'dise&ntilde;o').\n";
+        $prompt .= "7. La respuesta final solo debe contener el código HTML generado (no agregues '```html' ni texto explicativo antes ni después).\n";
         
         return $this->generateContent($prompt);
     }

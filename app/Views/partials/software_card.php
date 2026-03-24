@@ -23,8 +23,12 @@ $color = $color ?? 'blue';
                 <!-- Badge superior derecho -->
                 <?php if ($showBadges): ?>
                 <div class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md">
-                    <?php if ($isTrending): ?>
-                        <div class="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center animate-pulse">
+                    <?php if (!empty($soft['badge_editors_choice'])): ?>
+                        <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg" title="Editor's Choice">
+                            <i class="fas fa-award text-white text-xs"></i>
+                        </div>
+                    <?php elseif ($isTrending): ?>
+                        <div class="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center animate-pulse" title="Trending">
                             <i class="fas fa-fire text-white text-xs"></i>
                         </div>
                     <?php elseif ($isNew): ?>

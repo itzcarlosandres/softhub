@@ -4,6 +4,7 @@ $pageTitle = 'Agregar Nuevo Software';
 $pageDescription = 'Completa el formulario para agregar un nuevo programa';
 
 $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
+$licensesList = $db->query("SELECT * FROM licenses ORDER BY name")->fetchAll();
 
 // Verificar si la IA está habilitada
 $stmt = $db->query("SELECT setting_value FROM site_settings WHERE setting_key = 'ai_enabled'");
@@ -132,10 +133,9 @@ ob_start();
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tipo de Licencia <span class="text-pink-500">*</span></label>
                     <select name="license" required
                             class="w-full md:w-1/3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 transition-all [&>option]:bg-gray-900">
-                        <option value="free">🟢 Gratis</option>
-                        <option value="paid">🟠 Pago</option>
-                        <option value="trial">🔵 Prueba Gratis</option>
-                        <option value="freemium">🟣 Freemium</option>
+                        <?php foreach ($licensesList as $licOption): ?>
+                            <option value="<?= htmlspecialchars($licOption['slug']) ?>"><?= htmlspecialchars($licOption['name']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 

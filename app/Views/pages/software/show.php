@@ -88,6 +88,14 @@ ob_start();
                     <?= htmlspecialchars($software['name']) ?>
                     <span class="text-blue-600 dark:text-blue-400 text-7xl leading-none">.</span>
                  </h1>
+
+                 <?php if (!empty($software['badge_editors_choice'])): ?>
+                     <div class="flex justify-center lg:justify-start mb-6">
+                         <span class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-bold uppercase tracking-wider rounded-full shadow-lg shadow-purple-500/20">
+                             <i class="fas fa-award"></i> Editor's Choice
+                         </span>
+                     </div>
+                 <?php endif; ?>
                  
                  <p class="text-xl lg:text-3xl text-gray-500 dark:text-gray-400 font-light leading-snug mb-12 text-center lg:text-left transition-colors">
                      <?= htmlspecialchars($software['short_description']) ?>

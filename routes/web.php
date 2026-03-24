@@ -9,13 +9,9 @@ $router->get('/', 'HomeController@index');
 $router->get('/about', 'PageController@about');
 $router->get('/terms', 'PageController@terms');
 $router->get('/privacy', 'PageController@privacy');
-$router->get('/demo-heroes', 'PageController@demoHeroes'); // Ruta de Demo para Heroes
-$router->get('/demo-software', 'PageController@demoSoftware'); // Ruta de Demo para Software Catalog
-$router->get('/contact', 'HomeController@contact');
-$router->get('/demo-footers', 'PageController@demoFooters');
-$router->get('/demo-admin', 'PageController@demoAdmin');
-$router->get('/demo-titles', 'PageController@demoTitles');
-
+$router->get('/cookies', 'PageController@cookies');
+$router->get('/dmca', 'PageController@dmca');
+$router->get('/contact', 'PageController@contact');
 // Software Routes
 $router->get('/software', 'SoftwareController@index');
 $router->get('/software/:slug', 'SoftwareController@show');
@@ -25,6 +21,12 @@ $router->get('/api/latest-software', 'SoftwareController@apiLatest');
 $router->get('/download/:id', 'SoftwareController@download');
 $router->get('/go/:hash', 'GoController@index');
 $router->get('/search', 'SoftwareController@search');
+
+// Blog Routes
+$router->get('/blog', 'BlogController@index');
+$router->get('/blog/search', 'BlogController@search');
+$router->get('/blog/category/:slug', 'BlogController@category');
+$router->get('/blog/:slug', 'BlogController@show');
 
 // API Routes
 $router->get('/api/search', 'ApiController@search');
@@ -57,6 +59,26 @@ $router->post('/admin/categories/store', 'AdminController@categoryStore');
 $router->post('/admin/categories/update/:id', 'AdminController@categoryUpdate');
 $router->get('/admin/categories/delete/:id', 'AdminController@categoryDelete');
 
+// Admin Routes - License Management
+$router->get('/admin/licenses', 'AdminController@licenseList');
+$router->post('/admin/licenses/store', 'AdminController@licenseStore');
+$router->get('/admin/licenses/delete/:id', 'AdminController@licenseDelete');
+
+// Admin Routes - Blog Category Management
+$router->get('/admin/blog-categories', 'AdminController@blogCategoryList');
+$router->post('/admin/blog-categories/store', 'AdminController@blogCategoryStore');
+$router->post('/admin/blog-categories/update/:id', 'AdminController@blogCategoryUpdate');
+$router->get('/admin/blog-categories/delete/:id', 'AdminController@blogCategoryDelete');
+
+// Admin Routes - Blog Post Management
+$router->get('/admin/blog-posts', 'AdminController@blogPostList');
+$router->get('/admin/blog-posts/create', 'AdminController@blogPostCreate');
+$router->post('/admin/blog-posts/store', 'AdminController@blogPostStore');
+$router->get('/admin/blog-posts/edit/:id', 'AdminController@blogPostEdit');
+$router->post('/admin/blog-posts/update/:id', 'AdminController@blogPostUpdate');
+$router->get('/admin/blog-posts/delete/:id', 'AdminController@blogPostDelete');
+$router->get('/admin/blog-posts/toggle-featured/:id', 'AdminController@blogPostToggleFeatured');
+
 // Admin Routes - Settings
 $router->get('/admin/settings', 'AdminController@settings');
 $router->post('/admin/settings', 'AdminController@settingsSave');
@@ -74,5 +96,6 @@ $router->post('/api/generate-requirements', 'ApiController@generateRequirements'
 $router->post('/api/generate-description', 'ApiController@generateDescription');
 $router->post('/api/ai/generate-descriptions', 'AiController@generateDescriptions');
 $router->post('/api/ai/test-connection', 'AiController@testConnection');
+$router->post('/api/ai/generate-blog-post', 'AiController@generateBlogPost');
 
 return $router;

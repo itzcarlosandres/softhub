@@ -178,13 +178,6 @@ class HomeController extends Controller
         ]);
     }
 
-    public function contact()
-    {
-        return $this->view('pages/contact', [
-            'title' => 'Contacto'
-        ]);
-    }
-
     public function demoHeaders()
     {
         return $this->view('pages/demo_headers');

@@ -18,7 +18,7 @@
     <meta property="og:url" content="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
     <meta property="og:title" content="<?= $title ?? seo_site_title() ?>">
     <meta property="og:description" content="<?= $description ?? seo_site_description() ?>">
-    <meta property="og:image" content="<?= url('assets/images/og-image.jpg') ?>">
+    <meta property="og:image" content="<?= $image ?? url('assets/images/og-image.jpg') ?>">
     <meta property="og:site_name" content="<?= seo_site_title() ?>">
     <meta property="og:locale" content="es_ES">
     
@@ -27,7 +27,7 @@
     <meta name="twitter:url" content="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
     <meta name="twitter:title" content="<?= $title ?? seo_site_title() ?>">
     <meta name="twitter:description" content="<?= $description ?? seo_site_description() ?>">
-    <meta name="twitter:image" content="<?= url('assets/images/twitter-card.jpg') ?>">
+    <meta name="twitter:image" content="<?= $image ?? url('assets/images/twitter-card.jpg') ?>">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
@@ -627,14 +627,17 @@
 
                 <!-- Center: Nav Links (Modern Pills) -->
                 <nav class="hidden lg:flex items-center justify-center gap-1 bg-gray-100/50 dark:bg-gray-700/50 p-1 rounded-xl border border-gray-200/50 dark:border-gray-600/50 absolute left-1/2 transform -translate-x-1/2">
-                    <a href="<?= url() ?>" class="px-5 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-sm font-semibold text-gray-900 dark:text-white transition-all hover:text-blue-600 dark:hover:text-blue-400">
-                        Inicio
+                    <a href="<?= url() ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-sm font-semibold text-gray-900 dark:text-white transition-all hover:text-blue-600 dark:hover:text-blue-400">
+                        <i class="fas fa-home text-blue-500"></i> Inicio
                     </a>
-                    <a href="<?= url('categories') ?>" class="px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
-                        Categorías
+                    <a href="<?= url('categories') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
+                        <i class="fas fa-th-large text-gray-400"></i> Categorías
                     </a>
-                    <a href="<?= url('software') ?>" class="px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
-                        Programas
+                    <a href="<?= url('software') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
+                        <i class="fas fa-box-open text-gray-400"></i> Programas
+                    </a>
+                    <a href="<?= url('blog') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
+                        <i class="fas fa-rss text-gray-400"></i> Blog
                     </a>
                 </nav>
 
@@ -694,6 +697,10 @@
                 <a href="<?= url('software') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-box-open text-lg w-6"></i>
                     <span class="font-medium">Programas</span>
+                </a>
+                <a href="<?= url('blog') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+                    <i class="fas fa-rss text-lg w-6"></i>
+                    <span class="font-medium">Blog</span>
                 </a>
                 <a href="<?= url('latest') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-bolt text-lg w-6"></i>
@@ -898,7 +905,11 @@
         fetch(`<?= url('api/search') ?>?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
-                displayMobileSearchResults(data);
+                if (data.success && data.data && data.data.software) {
+                    displayMobileSearchResults(data.data.software);
+                } else {
+                    displayMobileSearchResults([]);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1008,7 +1019,11 @@
         fetch(`<?= url('api/search') ?>?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
-                displaySearchResults(data);
+                if (data.success && data.data && data.data.software) {
+                    displaySearchResults(data.data.software);
+                } else {
+                    displaySearchResults([]);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);

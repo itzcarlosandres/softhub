@@ -96,70 +96,79 @@ ob_start();
                             $isTrending = in_array($soft['id'], $trendingIds);
                             $isPremium = !empty($soft['price']) && $soft['price'] > 0;
                     ?>
-                    <div class="group cursor-pointer">
-                        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-5 border border-gray-100 dark:border-gray-700/50 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-500 hover:shadow-xl">
-                            <!-- Icon -->
-                            <div class="mb-4 relative">
-                                <div class="w-14 h-14 bg-white dark:bg-gray-700 rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                                    <?php if ($iconPath): ?>
-                                        <img src="<?= url($iconPath) ?>" alt="<?= htmlspecialchars($soft['name']) ?>" class="w-12 h-12 object-contain p-1">
-                                    <?php else: ?>
-                                        <i class="fas fa-cube text-2xl text-<?= $color ?>-600 dark:text-<?= $color ?>-400"></i>
-                                    <?php endif; ?>
+                    <a href="<?= url('software/' . $soft['slug']) ?>" class="group cursor-pointer block h-full flex flex-col">
+                        <div class="relative overflow-hidden flex-1 rounded-2xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-5 border border-gray-100 dark:border-gray-700/50 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-500 hover:shadow-xl flex flex-col justify-between">
+                            
+                            <div>
+                                <!-- Icon -->
+                                <div class="mb-4 relative">
+                                    <div class="w-14 h-14 bg-white dark:bg-gray-700 rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                        <?php if ($iconPath): ?>
+                                            <img src="<?= url($iconPath) ?>" alt="<?= htmlspecialchars($soft['name']) ?>" class="w-12 h-12 object-contain p-1">
+                                        <?php else: ?>
+                                            <i class="fas fa-cube text-2xl text-<?= $color ?>-600 dark:text-<?= $color ?>-400"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <!-- Badge superior derecho -->
+                                    <div class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md">
+                                        <?php if (!empty($soft['badge_editors_choice'])): ?>
+                                            <div class="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg" title="Editor's Choice">
+                                                <i class="fas fa-award text-white text-xs"></i>
+                                            </div>
+                                        <?php elseif ($isTrending): ?>
+                                            <div class="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center animate-pulse" title="Trending">
+                                                <i class="fas fa-fire text-white text-xs"></i>
+                                            </div>
+                                        <?php elseif ($isNew): ?>
+                                            <div class="w-7 h-7 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-star text-white text-xs"></i>
+                                            </div>
+                                        <?php elseif ($isPremium): ?>
+                                            <div class="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-crown text-white text-xs"></i>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                                 
-                                <!-- Badge superior derecho -->
-                                <div class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md">
-                                    <?php if ($isTrending): ?>
-                                        <div class="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center animate-pulse">
-                                            <i class="fas fa-fire text-white text-xs"></i>
-                                        </div>
-                                    <?php elseif ($isNew): ?>
-                                        <div class="w-7 h-7 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-star text-white text-xs"></i>
-                                        </div>
-                                    <?php elseif ($isPremium): ?>
-                                        <div class="w-7 h-7 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-crown text-white text-xs"></i>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-check text-white text-xs"></i>
-                                        </div>
-                                    <?php endif; ?>
+                                <!-- Content -->
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-<?= $color ?>-600 dark:group-hover:text-<?= $color ?>-400 transition line-clamp-1">
+                                    <?= htmlspecialchars($soft['name']) ?>
+                                </h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed line-clamp-2 text-sm">
+                                    <?= htmlspecialchars(substr($soft['short_description'] ?? $soft['description'] ?? '', 0, 100)) ?>...
+                                </p>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <!-- Stats -->
+                                <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4 transition-colors">
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-download text-<?= $color ?>-500 dark:text-<?= $color ?>-400"></i>
+                                        <span class="font-medium text-gray-700 dark:text-gray-300"><?= number_format($soft['downloads'] ?? 0) ?></span>
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-star text-yellow-500"></i>
+                                        <span class="font-medium text-gray-700 dark:text-gray-300"><?= number_format($soft['rating'] ?? 4.5, 1) ?></span>
+                                    </span>
                                 </div>
-                            </div>
-                            
-                            <!-- Content -->
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-<?= $color ?>-600 dark:group-hover:text-<?= $color ?>-400 transition line-clamp-1">
-                                <?= htmlspecialchars($soft['name']) ?>
-                            </h3>
-                            <p class="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed line-clamp-2 text-sm">
-                                <?= htmlspecialchars(substr($soft['short_description'] ?? $soft['description'] ?? '', 0, 100)) ?>...
-                            </p>
-                            
-                            <!-- Stats -->
-                            <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4 transition-colors">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-download text-<?= $color ?>-500 dark:text-<?= $color ?>-400"></i>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300"><?= number_format($soft['downloads'] ?? 0) ?></span>
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-star text-yellow-500"></i>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300"><?= number_format($soft['rating'] ?? 4.5, 1) ?></span>
-                                </span>
-                            </div>
-                            
-                            <!-- Button -->
-                            <div class="flex items-center justify-between">
-                                <?php if ($isPremium): ?>
-                                    <span class="text-xs font-bold text-purple-600 dark:text-purple-400">$<?= number_format($soft['price'], 2) ?></span>
-                                <?php else: ?>
-                                    <span class="text-xs font-bold text-gray-900 dark:text-white">Gratis</span>
-                                <?php endif; ?>
-                                <a href="<?= url('software/' . $soft['slug']) ?>" class="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-full text-xs font-medium hover:bg-<?= $color ?>-600 dark:hover:bg-<?= $color ?>-500 transition-all transform group-hover:translate-x-1 inline-flex items-center gap-1">
-                                    Ver <i class="fas fa-arrow-right text-xs"></i>
-                                </a>
+                                
+                                <!-- Button -->
+                                <div class="flex items-center justify-between">
+                                    <?php if ($isPremium): ?>
+                                        <span class="text-xs font-bold text-purple-600 dark:text-purple-400">$<?= number_format($soft['price'], 2) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-xs font-bold text-gray-900 dark:text-white">Gratis</span>
+                                    <?php endif; ?>
+                                    <span class="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-full text-xs font-medium group-hover:bg-<?= $color ?>-600 dark:group-hover:bg-<?= $color ?>-500 transition-all transform group-hover:translate-x-1 inline-flex items-center gap-1">
+                                        Ver <i class="fas fa-arrow-right text-xs"></i>
+                                    </span>
+                                </div>
                             </div>
                             
                             <!-- Trending Badge (si aplica) -->
@@ -171,7 +180,7 @@ ob_start();
                                 </div>
                             <?php endif; ?>
                         </div>
-                    </div>
+                    </a>
                     <?php 
                         endforeach; 
                     else: 

@@ -58,7 +58,7 @@ ob_start();
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 
                 <!-- Sidebar -->
-                <div class="lg:col-span-1 space-y-8">
+                <div class="lg:col-span-1 space-y-8 order-last lg:order-first">
                     <!-- TOP Vistos -->
                     <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-700/50">
                         <h3 class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">

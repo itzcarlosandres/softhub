@@ -113,6 +113,49 @@ class AiController extends Controller
     }
     
     /**
+     * Generar Artículos de Blog con IA SEO optimizados
+     */
+    public function generateBlogPost()
+    {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'error' => 'Método no permitido']);
+            return;
+        }
+        
+        $title = $_POST['title'] ?? '';
+        $category = $_POST['category'] ?? '';
+        
+        if (empty($title)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'El título del artículo es requerido']);
+            return;
+        }
+        
+        try {
+            $gemini = new GeminiService();
+            $result = $gemini->generateBlogPost($title, $category);
+            
+            if (!$result['success']) {
+                http_response_code(500);
+                echo json_encode($result);
+                return;
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'text' => $result['text']
+            ]);
+            
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => 'Error: ' . $e->getMessage()]);
+        }
+    }
+    
+    /**
      * Probar conexión con Gemini
      */
     public function testConnection()

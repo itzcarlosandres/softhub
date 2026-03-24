@@ -4,11 +4,11 @@ ob_start();
 ?>
 
 <!-- Hero Section (Glassmorphism & Blur) -->
-<div class="container mx-auto px-4 pt-0 pb-12">
+<div class="hidden md:block container mx-auto px-4 pt-0 pb-12">
     <section class="relative rounded-3xl overflow-hidden bg-white dark:bg-gray-800 group transition-colors duration-300">
         
         <!-- Hero Background -->
-        <div class="relative bg-white dark:bg-gray-800 min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden transition-colors duration-300 home-hero-main">
+        <div class="relative bg-white dark:bg-gray-800 min-h-[300px] md:min-h-[500px] lg:min-h-[550px] py-16 md:pb-24 md:pt-0 flex items-center justify-center overflow-hidden transition-colors duration-300 home-hero-main">
             <!-- Background Elements -->
             <div class="absolute inset-0 bg-white dark:bg-gray-800 z-0 transition-colors duration-300">
                 <!-- Blobs (Subtle) -->
@@ -84,7 +84,7 @@ ob_start();
                 <?php endif; ?>
                 
                 <!-- Hero Search Bar - Simple Search -->
-                <div class="max-w-2xl mx-auto mb-12 relative z-50">
+                <div class="max-w-2xl mx-auto mb-0 md:mb-12 relative z-50">
                     <form action="<?= url('search') ?>" method="GET" id="live-search-form" class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400 dark:text-gray-500 text-lg group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors"></i>
@@ -104,8 +104,8 @@ ob_start();
             </div>
         </div>
         
-        <!-- Glass Stats Bar (Bottom) -->
-        <div class="absolute bottom-0 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 md:p-6 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
+        <!-- Glass Stats Bar (Bottom) - Hidden on mobile -->
+        <div class="hidden md:block absolute bottom-0 left-0 right-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-2xl border-t border-gray-200/50 dark:border-gray-700/50 p-4 md:p-6 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto divide-x divide-gray-200/50 dark:divide-gray-700/50">
                 <div class="text-center">
                     <div class="text-2xl font-bold text-gray-900 dark:text-white transition-colors"><?= number_format($totalSoftware) ?></div>

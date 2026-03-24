@@ -141,7 +141,22 @@
 
                 <a href="<?= url('admin/categories') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'categories' ? 'bg-pink-600/20 text-pink-400 font-medium border border-pink-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
                     <i class="fas fa-tags w-5 text-center <?= $cp == 'categories' ? 'text-pink-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
-                    <span>Categorías</span>
+                    <span>Categorías App</span>
+                </a>
+
+                <a href="<?= url('admin/blog-categories') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'blog_categories' ? 'bg-rose-600/20 text-rose-400 font-medium border border-rose-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-folder w-5 text-center <?= $cp == 'blog_categories' ? 'text-rose-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Categorías Blog</span>
+                </a>
+
+                <a href="<?= url('admin/blog-posts') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'blog_posts' ? 'bg-orange-600/20 text-orange-400 font-medium border border-orange-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-rss w-5 text-center <?= $cp == 'blog_posts' ? 'text-orange-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Blog Entradas</span>
+                </a>
+
+                <a href="<?= url('admin/licenses') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'licenses' ? 'bg-blue-600/20 text-blue-400 font-medium border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-id-badge w-5 text-center <?= $cp == 'licenses' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Tipo de Licencias</span>
                 </a>
 
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6 font-outfit">System</p>
