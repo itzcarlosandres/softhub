@@ -1,0 +1,14 @@
+¡Hola! Esta es una carpeta de ejemplo para que aprendas a usar tu nuevo sistema de actualizaciones.
+
+Para probarlo, haz lo siguiente:
+
+1. Entra en esta carpeta 'ESTRUCTURA_ACTUALIZACION'.
+2. Verás dos cosas:
+   - Una carpeta 'app/' (que adentro tiene un archivo de prueba).
+   - Un archivo 'update_db.sql' (con una consulta SQL de prueba).
+3. Selecciona AMBOS (la carpeta 'app' y el archivo 'sql').
+4. Haz click derecho -> Enviar a -> Carpeta comprimida (en zip).
+5. Ponle el nombre que quieras (ej: 'mi_primera_update.zip').
+6. Ve a tu Panel Admin de SoftHub -> Actualizaciones y sube ese zip.
+
+¡Verás que el sistema lo instala perfectamente! 🎉

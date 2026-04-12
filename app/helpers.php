@@ -104,6 +104,54 @@ if (!function_exists('encrypt_id')) {
 }
 
 /**
+ * Localización / Traducción
+ */
+if (!function_exists('__')) {
+    function __($key, $default = null) {
+        static $translations = [];
+        $lang = get_language();
+        
+        if (!isset($translations[$lang])) {
+            $path = BASE_PATH . "/app/Languages/{$lang}.php";
+            if (file_exists($path)) {
+                $translations[$lang] = include $path;
+            } else {
+                $translations[$lang] = [];
+            }
+        }
+        
+        return $translations[$lang][$key] ?? ($default ?? $key);
+    }
+}
+
+if (!function_exists('get_language')) {
+    function get_language() {
+        if (isset($_SESSION['lang'])) {
+            return $_SESSION['lang'];
+        }
+        
+        static $defaultLang = null;
+        if ($defaultLang === null) {
+            $settingsModel = new \App\Models\SiteSetting();
+            $defaultLang = $settingsModel->get('default_language', 'es');
+        }
+        
+        return $defaultLang;
+    }
+}
+
+if (!function_exists('set_language')) {
+    function set_language($lang) {
+        $supported = ['es', 'en'];
+        if (in_array($lang, $supported)) {
+            $_SESSION['lang'] = $lang;
+            return true;
+        }
+        return false;
+    }
+}
+
+/**
  * Decriptar ID
  */
 if (!function_exists('decrypt_id')) {

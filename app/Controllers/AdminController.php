@@ -21,6 +21,65 @@ class AdminController extends Controller
         $this->softwareModel = new Software();
         $this->categoryModel = new Category();
         $this->licenseModel = new License();
+        $this->runMigrations();
+    }
+
+    private function runMigrations()
+    {
+        try {
+            $db = \App\Database::getInstance()->getConnection();
+            
+            // Check badges table
+            try {
+                $db->query("SELECT 1 FROM badges LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("CREATE TABLE IF NOT EXISTS badges (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    slug VARCHAR(100) NOT NULL,
+                    color VARCHAR(50) DEFAULT 'cyan',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )");
+            }
+
+            // Check custom_badge column
+            try {
+                $db->query("SELECT custom_badge FROM software LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("ALTER TABLE software ADD COLUMN custom_badge VARCHAR(255) DEFAULT NULL");
+            }
+
+            // Check badge_id column
+            try {
+                $db->query("SELECT badge_id FROM software LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("ALTER TABLE software ADD COLUMN badge_id INT DEFAULT NULL");
+                try {
+                    $db->exec("ALTER TABLE software ADD FOREIGN KEY (badge_id) REFERENCES badges(id) ON DELETE SET NULL");
+                } catch (\Exception $exf) {}
+            }
+
+            // Check views column for Analytics
+            try {
+                $db->query("SELECT views FROM software LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("ALTER TABLE software ADD COLUMN views INT DEFAULT 0 AFTER downloads");
+            }
+
+            // Create reports table
+            try {
+                $db->query("SELECT 1 FROM reports LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("CREATE TABLE IF NOT EXISTS reports (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    software_id INT NOT NULL,
+                    reason VARCHAR(255) DEFAULT NULL,
+                    status ENUM('pending', 'resolved') DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (software_id) REFERENCES software(id) ON DELETE CASCADE
+                )");
+            }
+        } catch (\Exception $e) {}
     }
 
     // Dashboard
@@ -132,10 +191,13 @@ class AdminController extends Controller
         $this->requireAdmin();
         
         $categories = $this->categoryModel->all();
+        $badgeModel = new \App\Models\Badge();
+        $badges = $badgeModel->all();
 
         return $this->view('admin/software/create', [
             'title' => 'Agregar Nuevo Software',
-            'categories' => $categories
+            'categories' => $categories,
+            'badges' => $badges
         ]);
     }
 
@@ -177,6 +239,10 @@ class AdminController extends Controller
             'requirements' => $_POST['requirements'] ?? '',
             'status' => 'approved', // Publicación directa
             'featured' => isset($_POST['featured']) ? 1 : 0,
+            'trending' => isset($_POST['trending']) ? 1 : 0,
+            'badge_editors_choice' => isset($_POST['badge_editors_choice']) ? 1 : 0,
+            'custom_badge' => $_POST['custom_badge'] ?? '',
+            'badge_id' => !empty($_POST['badge_id']) ? (int)$_POST['badge_id'] : null,
             'downloads' => 0,
             'rating' => 0
         ];
@@ -196,30 +262,61 @@ class AdminController extends Controller
         // Guardar enlaces de descarga múltiples
         if (isset($_POST['download_links']) && is_array($_POST['download_links'])) {
             $downloadLinkModel = new \App\Models\DownloadLink();
-            
+            $torrentDir = BASE_PATH . '/public/uploads/torrents';
+            if (!is_dir($torrentDir)) {
+                mkdir($torrentDir, 0755, true);
+            }
+
             foreach ($_POST['download_links'] as $platform => $links) {
-                // Verificar si es un array de enlaces múltiples o un solo enlace
-                if (isset($links['url'])) {
-                    // Formato antiguo: un solo enlace por plataforma
-                    if (!empty($links['url'])) {
-                        $downloadLinkModel->create([
-                            'software_id' => $softwareId,
-                            'platform' => $platform,
-                            'download_url' => $links['url'],
-                            'file_size' => $links['size'] ?? null,
-                            'version' => $links['version'] ?? null
-                        ]);
-                    }
-                } else {
-                    // Formato nuevo: múltiples enlaces por plataforma
-                    foreach ($links as $linkData) {
-                        if (!empty($linkData['url'])) {
+                // Normalizar: siempre trabajar con array indexado
+                $linksArray = isset($links['url']) ? [0 => $links] : $links;
+
+                foreach ($linksArray as $i => $linkData) {
+                    $url      = trim($linkData['url'] ?? '');
+                    $fileSize = $linkData['size'] ?? null;
+                    $version  = $linkData['version'] ?? null;
+
+                    if ($platform === 'Torrent') {
+                        // 1) Guardar magnet URL si existe
+                        if (!empty($url)) {
                             $downloadLinkModel->create([
-                                'software_id' => $softwareId,
-                                'platform' => $platform,
-                                'download_url' => $linkData['url'],
-                                'file_size' => $linkData['size'] ?? null,
-                                'version' => $linkData['version'] ?? null
+                                'software_id'  => $softwareId,
+                                'platform'     => 'Torrent',
+                                'download_url' => $url,
+                                'file_size'    => $fileSize,
+                                'version'      => $version
+                            ]);
+                        }
+
+                        // 2) Guardar archivo .torrent si fue subido (independiente del magnet)
+                        $fileError = $_FILES['download_links']['error'][$platform][$i]['torrent_file']
+                                     ?? ($_FILES['download_links']['error'][$platform]['torrent_file'] ?? UPLOAD_ERR_NO_FILE);
+                        $fileTmp   = $_FILES['download_links']['tmp_name'][$platform][$i]['torrent_file']
+                                     ?? ($_FILES['download_links']['tmp_name'][$platform]['torrent_file'] ?? '');
+                        $fileName  = $_FILES['download_links']['name'][$platform][$i]['torrent_file']
+                                     ?? ($_FILES['download_links']['name'][$platform]['torrent_file'] ?? '');
+
+                        if ($fileError === UPLOAD_ERR_OK && $fileTmp && is_uploaded_file($fileTmp)) {
+                            $safeName = time() . '_' . preg_replace('/[^a-z0-9_\-\.]/i', '_', $fileName);
+                            move_uploaded_file($fileTmp, $torrentDir . '/' . $safeName);
+                            $downloadLinkModel->create([
+                                'software_id'  => $softwareId,
+                                'platform'     => 'Torrent',
+                                'download_url' => 'uploads/torrents/' . $safeName,
+                                'file_size'    => $fileSize,
+                                'version'      => $version
+                            ]);
+                        }
+
+                    } else {
+                        // Plataforma normal
+                        if (!empty($url)) {
+                            $downloadLinkModel->create([
+                                'software_id'  => $softwareId,
+                                'platform'     => $platform,
+                                'download_url' => $url,
+                                'file_size'    => $fileSize,
+                                'version'      => $version
                             ]);
                         }
                     }
@@ -242,11 +339,15 @@ class AdminController extends Controller
         }
 
         $categories = $this->categoryModel->all();
+        $badgeModel = new \App\Models\Badge();
+        $badges = $badgeModel->all();
 
         return $this->view('admin/software/edit', [
+            'id' => $id,
             'title' => 'Editar Software',
             'software' => $software,
-            'categories' => $categories
+            'categories' => $categories,
+            'badges' => $badges
         ]);
     }
 
@@ -258,6 +359,19 @@ class AdminController extends Controller
             $this->redirect('/admin/software');
         }
 
+        // Check for partial update (from Badges management)
+        if (isset($_POST['partial_update']) && $_POST['partial_update'] === 'true') {
+            $data = [
+                'custom_badge' => $_POST['custom_badge'] ?? '',
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+            $this->softwareModel->update($id, $data);
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                return $this->json(['success' => true]);
+            }
+            $this->redirect('/admin/badges');
+        }
+
         $data = [
             'name' => $_POST['name'] ?? '',
             'slug' => $this->generateSlug($_POST['name'] ?? ''),
@@ -267,7 +381,7 @@ class AdminController extends Controller
             'developer' => $_POST['developer'] ?? '',
             'category_id' => $_POST['category_id'] ?? null,
             'license' => $_POST['license'] ?? 'free',
-            'operating_system' => $_POST['operating_system'] ?? '',
+            'operating_system' => isset($_POST['platforms']) ? implode(', ', $_POST['platforms']) : '',
             'file_size' => $_POST['file_size'] ?? '',
             'price' => isset($_POST['price']) && $_POST['price'] !== '' ? (float)$_POST['price'] : 0.00,
             'buy_url' => $_POST['buy_url'] ?? '',
@@ -275,7 +389,11 @@ class AdminController extends Controller
             'requirements' => $_POST['requirements'] ?? '',
             'status' => 'approved', // Siempre publicado
             'featured' => isset($_POST['featured']) ? 1 : 0,
-            'badge_editors_choice' => isset($_POST['badge_editors_choice']) ? 1 : 0
+            'trending' => isset($_POST['trending']) ? 1 : 0,
+            'badge_editors_choice' => isset($_POST['badge_editors_choice']) ? 1 : 0,
+            'custom_badge' => $_POST['custom_badge'] ?? '',
+            'badge_id' => !empty($_POST['badge_id']) ? (int)$_POST['badge_id'] : null,
+            'updated_at' => date('Y-m-d H:i:s')
         ];
 
         // Handle image upload
@@ -517,7 +635,153 @@ class AdminController extends Controller
         $this->redirect('/admin/licenses');
     }
 
-    // Settings
+    public function badgeList()
+    {
+        $this->requireAdmin();
+        $badgeModel = new \App\Models\Badge();
+        $badges = $badgeModel->all();
+        
+        return $this->view('admin/badges/index', [
+            'title' => 'Gestión de Badges',
+            'currentPage' => 'badges',
+            'badges' => $badges
+        ]);
+    }
+
+    public function badgeStore()
+    {
+        $this->requireAdmin();
+        $name = $_POST['name'] ?? '';
+        if ($name) {
+            $badgeModel = new \App\Models\Badge();
+            $badgeModel->create([
+                'name' => $name,
+                'slug' => $this->generateSlug($name),
+                'color' => $_POST['color'] ?? 'cyan'
+            ]);
+            $_SESSION['success'] = 'Badge creado correctamente';
+        }
+        $this->redirect('/admin/badges');
+    }
+
+    public function badgeDelete($id)
+    {
+        $this->requireAdmin();
+        $badgeModel = new \App\Models\Badge();
+        $badgeModel->delete($id);
+        $_SESSION['success'] = 'Badge eliminado';
+        $this->redirect('/admin/badges');
+    }
+
+    // =========================================
+    // REPORTS - Broken Link Reports
+    // =========================================
+
+    public function reportLinkPublic()
+    {
+        header('Content-Type: application/json');
+        $softwareId = (int)($_POST['software_id'] ?? 0);
+        $reason = htmlspecialchars($_POST['reason'] ?? 'Enlace roto');
+        if (!$softwareId) {
+            echo json_encode(['success' => false]);
+            exit;
+        }
+        $db = \App\Database::getInstance()->getConnection();
+        $stmt = $db->prepare("INSERT INTO reports (software_id, reason) VALUES (?, ?)");
+        $stmt->execute([$softwareId, $reason]);
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    public function reportList()
+    {
+        $this->requireAdmin();
+        $db = \App\Database::getInstance()->getConnection();
+        $reports = $db->query("
+            SELECT r.*, s.name AS software_name, s.slug AS software_slug
+            FROM reports r
+            LEFT JOIN software s ON r.software_id = s.id
+            ORDER BY r.created_at DESC
+        ")->fetchAll(\PDO::FETCH_ASSOC);
+
+        $pendingCount = count(array_filter($reports, fn($r) => $r['status'] === 'pending'));
+
+        $this->view('admin/reports/index', [
+            'reports' => $reports,
+            'pendingCount' => $pendingCount
+        ]);
+    }
+
+    public function reportResolve($id)
+    {
+        $this->requireAdmin();
+        $db = \App\Database::getInstance()->getConnection();
+        $db->prepare("UPDATE reports SET status='resolved' WHERE id=?")->execute([$id]);
+        $_SESSION['success'] = 'Reporte marcado como resuelto';
+        $this->redirect('/admin/reports');
+    }
+
+    public function reportDelete($id)
+    {
+        $this->requireAdmin();
+        $db = \App\Database::getInstance()->getConnection();
+        $db->prepare("DELETE FROM reports WHERE id=?")->execute([$id]);
+        $_SESSION['success'] = 'Reporte eliminado';
+        $this->redirect('/admin/reports');
+    }
+
+    // =========================================
+    // ANALYTICS - Real-time Page Views
+    // =========================================
+
+    public function trackView()
+    {
+        header('Content-Type: application/json');
+        $softwareId = (int)($_POST['software_id'] ?? 0);
+        if ($softwareId) {
+            $db = \App\Database::getInstance()->getConnection();
+            $db->prepare("UPDATE software SET views = views + 1 WHERE id=?")->execute([$softwareId]);
+        }
+        echo json_encode(['success' => true]);
+        exit;
+    }
+
+    public function analyticsIndex()
+    {
+        $this->requireAdmin();
+        $db = \App\Database::getInstance()->getConnection();
+
+        // Top by views
+        $topViews = $db->query("
+            SELECT id, name, slug, views, downloads, rating
+            FROM software WHERE status='approved' OR status='published'
+            ORDER BY views DESC LIMIT 10
+        ")->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Top by downloads
+        $topDownloads = $db->query("
+            SELECT id, name, slug, downloads, views
+            FROM software WHERE status='approved' OR status='published'
+            ORDER BY downloads DESC LIMIT 10
+        ")->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Totals
+        $totals = $db->query("
+            SELECT SUM(views) as total_views, SUM(downloads) as total_downloads, COUNT(*) as total_software
+            FROM software WHERE status='approved' OR status='published'
+        ")->fetch(\PDO::FETCH_ASSOC);
+
+        // Recent reports count
+        $pendingReports = $db->query("SELECT COUNT(*) FROM reports WHERE status='pending'")->fetchColumn();
+
+        $this->view('admin/analytics/index', [
+            'topViews' => $topViews,
+            'topDownloads' => $topDownloads,
+            'totals' => $totals,
+            'pendingReports' => $pendingReports
+        ]);
+    }
+
     public function settings()
     {
         $this->requireAdmin();
@@ -552,29 +816,18 @@ class AdminController extends Controller
         
         // Procesar logo
         if (isset($_FILES['site_logo']) && $_FILES['site_logo']['error'] === 0) {
-            // Validar tamaño (máximo 2MB)
-            if ($_FILES['site_logo']['size'] > 2 * 1024 * 1024) {
-                $_SESSION['error'] = 'El logo no debe superar los 2MB';
-                $this->redirect('/admin/settings');
-            }
+            $extension = strtolower(pathinfo($_FILES['site_logo']['name'], PATHINFO_EXTENSION));
+            $allowedLogo = ['png', 'jpg', 'jpeg', 'svg', 'webp'];
             
-            // Validar tipo de archivo
-            $allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
-            if (!in_array($_FILES['site_logo']['type'], $allowedTypes)) {
-                $_SESSION['error'] = 'Formato de logo no válido. Use PNG, JPG, SVG o WebP';
-                $this->redirect('/admin/settings');
-            }
-            
-            // Eliminar logo anterior si existe
-            $oldLogo = $settingsModel->get('site_logo');
-            if ($oldLogo && file_exists(__DIR__ . '/../../public/' . $oldLogo)) {
-                unlink(__DIR__ . '/../../public/' . $oldLogo);
-            }
-            
-            // Subir nuevo logo
-            $logoPath = $this->uploadFile($_FILES['site_logo'], 'branding');
-            if ($logoPath) {
-                $settingsModel->set('site_logo', $logoPath);
+            if (in_array($extension, $allowedLogo)) {
+                $logoPath = $this->uploadFile($_FILES['site_logo'], 'branding');
+                if ($logoPath) {
+                    $oldLogo = $settingsModel->get('site_logo');
+                    if ($oldLogo && file_exists(__DIR__ . '/../../public/' . $oldLogo)) { @unlink(__DIR__ . '/../../public/' . $oldLogo); }
+                    $settingsModel->set('site_logo', $logoPath);
+                }
+            } else {
+                $_SESSION['error'] = 'Formato de logo no válido';
             }
         }
         
@@ -587,42 +840,26 @@ class AdminController extends Controller
             $settingsModel->set('site_logo', '');
         }
         
-        // Procesar favicon
+        // 2. Favicon (Versión Ultra-Resistente)
         if (isset($_FILES['site_favicon']) && $_FILES['site_favicon']['error'] === 0) {
-            // Validar tamaño (máximo 1MB)
-            if ($_FILES['site_favicon']['size'] > 1024 * 1024) {
-                $_SESSION['error'] = 'El favicon no debe superar 1MB';
-                $this->redirect('/admin/settings');
-            }
+            $extFav = strtolower(pathinfo($_FILES['site_favicon']['name'], PATHINFO_EXTENSION));
+            $permitidos = ['ico', 'png', 'svg', 'webp', 'jpg', 'jpeg'];
             
-            // Validar tipo de archivo
-            $allowedTypes = [
-                'image/x-icon', 
-                'image/vnd.microsoft.icon', 
-                'image/png', 
-                'image/svg+xml', 
-                'image/ico', 
-                'image/icon'
-            ];
-            $extension = strtolower(pathinfo($_FILES['site_favicon']['name'], PATHINFO_EXTENSION));
-            $allowedExtensions = ['ico', 'png', 'svg'];
-
-            if (!in_array($_FILES['site_favicon']['type'], $allowedTypes) && !in_array($extension, $allowedExtensions)) {
-                $_SESSION['error'] = 'Formato de favicon no válido. Use ICO, PNG o SVG (Detectado: ' . $_FILES['site_favicon']['type'] . ')';
-                $this->redirect('/admin/settings');
+            if (in_array($extFav, $permitidos)) {
+                $faviconPath = $this->uploadFile($_FILES['site_favicon'], 'branding');
+                if ($faviconPath) {
+                    $settingsModel->set('site_favicon', $faviconPath);
+                } else {
+                    $_SESSION['error'] = 'Error al mover el archivo de favicon a la carpeta branding.';
+                }
+            } else {
+                $_SESSION['error'] = 'Formato de favicon no permitido: ' . $extFav;
             }
-            
-            // Eliminar favicon anterior si existe
-            $oldFavicon = $settingsModel->get('site_favicon');
-            if ($oldFavicon && file_exists(__DIR__ . '/../../public/' . $oldFavicon)) {
-                unlink(__DIR__ . '/../../public/' . $oldFavicon);
-            }
-            
-            // Subir nuevo favicon
-            $faviconPath = $this->uploadFile($_FILES['site_favicon'], 'branding');
-            if ($faviconPath) {
-                $settingsModel->set('site_favicon', $faviconPath);
-            }
+        }
+        
+        // Debug: Si hay un error en Files, capturarlo
+        if (isset($_FILES['site_favicon']) && $_FILES['site_favicon']['error'] !== 0 && $_FILES['site_favicon']['error'] !== 4) {
+             $_SESSION['error'] = 'Error de PHP al subir: Codigo ' . $_FILES['site_favicon']['error'];
         }
         
         // Eliminar favicon si se marcó la opción
@@ -675,67 +912,50 @@ class AdminController extends Controller
 
     private function uploadFile($file, $folder = 'uploads')
     {
-        $uploadDir = __DIR__ . '/../../public/uploads/' . $folder . '/';
+        // Usar rutas absolutas reales para evitar confusiones entre Windows y Linux
+        $basePath = dirname(dirname(__DIR__)); 
+        $uploadDir = $basePath . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR;
         
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+            if (!mkdir($uploadDir, 0777, true)) {
+                error_log("❌ ERROR FATAL: No se pudo crear la carpeta: " . $uploadDir);
+                return null;
+            }
         }
 
         $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $filename = uniqid() . '.' . $extension;
         $destination = $uploadDir . $filename;
+        
+        // Debug: Ver si el archivo temporal existe
+        if (!file_exists($file['tmp_name'])) {
+            error_log("❌ Error: El archivo temporal no existe: " . $file['tmp_name']);
+            return null;
+        }
 
+        // 1. Mover el archivo original
         if (move_uploaded_file($file['tmp_name'], $destination)) {
+            @chmod($destination, 0644);
             
-            // 🖼️ OPTIMIZACIÓN AUTOMÁTICA DE IMÁGENES (Saltar para branding - Logo/Favicon)
-            $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-            
-            if (in_array($extension, $imageExtensions) && $folder !== 'branding') {
+            // 2. Intentar optimizar (Opcional, si falla no importa)
+            if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp']) && $folder !== 'branding') {
                 try {
-                    // Importar ImageOptimizer
                     require_once __DIR__ . '/../Helpers/ImageOptimizer.php';
+                    $webpPath = \App\Helpers\ImageOptimizer::optimizeImage($destination, 1200, 85);
                     
-                    // 1. Optimizar y convertir a WebP
-                    $webpPath = \App\Helpers\ImageOptimizer::optimizeImage(
-                        $destination,
-                        1200,  // Max width
-                        85     // Quality
-                    );
-                    
-                    // 2. Crear thumbnail
-                    $thumbPath = \App\Helpers\ImageOptimizer::createThumbnail(
-                        $destination,
-                        300,   // Width
-                        300    // Height
-                    );
-                    
-                    // Si la conversión fue exitosa, usar la versión WebP
                     if ($webpPath && file_exists($webpPath)) {
-                        // Eliminar imagen original para ahorrar espacio
-                        if ($extension !== 'webp') {
-                            @unlink($destination);
-                        }
-                        
-                        // Actualizar filename a WebP
+                        if ($extension !== 'webp') { @unlink($destination); }
                         $filename = basename($webpPath);
-                        
-                        // Log de optimización
-                        error_log("✅ Imagen optimizada: " . $filename);
-                        if ($thumbPath) {
-                            error_log("✅ Thumbnail creado: " . basename($thumbPath));
-                        }
                     }
-                    
-                } catch (\Exception $e) {
-                    // Si falla la optimización, continuar con la imagen original
-                    error_log("⚠️ Error al optimizar imagen: " . $e->getMessage());
+                } catch (\Throwable $e) {
+                    error_log("⚠️ Optimización saltada: " . $e->getMessage());
                 }
             }
             
-            // Devolver la ruta relativa para que funcione con url()
             return 'uploads/' . $folder . '/' . $filename;
         }
 
+        error_log("❌ Error: No se pudo subir el archivo a " . $destination);
         return null;
     }
     
@@ -1153,5 +1373,66 @@ class AdminController extends Controller
         }
         
         $this->redirect('/admin/blog-posts');
+    }
+
+    // GESTIÓN DE ACTUALIZACIONES
+    public function showUpdates()
+    {
+        $this->requireAdmin();
+        $settingsModel = new \App\Models\SiteSetting();
+        $currentVersion = $settingsModel->get('system_version', '1.0.0');
+
+        return $this->view('admin/updates/index', [
+            'title' => 'Actualizaciones del Sistema',
+            'currentPage' => 'updates',
+            'currentVersion' => $currentVersion
+        ]);
+    }
+
+    public function handleUpdate()
+    {
+        $this->requireAdmin();
+        
+        if (!isset($_FILES['update_zip']) || $_FILES['update_zip']['error'] !== 0) {
+            $_SESSION['error'] = 'Por favor selecciona un archivo ZIP válido.';
+            $this->redirect('/admin/updates');
+            return;
+        }
+
+        if (!class_exists('ZipArchive')) {
+            $_SESSION['error'] = 'La extensión ZipArchive no está habilitada en tu servidor.';
+            $this->redirect('/admin/updates');
+            return;
+        }
+
+        $file = $_FILES['update_zip'];
+        $zip = new \ZipArchive();
+        
+        if ($zip->open($file['tmp_name']) === TRUE) {
+            // El zip se extrae en el BASE_PATH (raíz del proyecto)
+            $basePath = dirname(dirname(__DIR__));
+            
+            // 1. Extraer archivos
+            $zip->extractTo($basePath);
+            $zip->close();
+            
+            // 2. Procesar base de datos si existe el script de actualización
+            if (file_exists($basePath . '/update_db.sql')) {
+                try {
+                    $db = \App\Database::getInstance()->getConnection();
+                    $sql = file_get_contents($basePath . '/update_db.sql');
+                    $db->exec($sql);
+                    unlink($basePath . '/update_db.sql'); // Limpiar
+                } catch (\Exception $e) {
+                    error_log("Error en actualización de DB: " . $e->getMessage());
+                }
+            }
+
+            $_SESSION['success'] = '¡Sistema actualizado con éxito!';
+        } else {
+            $_SESSION['error'] = 'Error al abrir el archivo ZIP. Asegúrate de que esté comprimido correctamente.';
+        }
+
+        $this->redirect('/admin/updates');
     }
 }

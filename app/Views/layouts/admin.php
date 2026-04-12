@@ -74,7 +74,7 @@
         }
 
         .glass-panel {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
@@ -104,9 +104,12 @@
     <div class="flex h-screen relative z-10" x-data="{ sidebarOpen: false }">
         
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-50 w-64 glass-panel border-r border-white/5 transition-transform duration-300 md:relative md:translate-x-0 flex flex-col">
+        <aside 
+            :class="{ 'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen }"
+            class="fixed md:translate-x-0 md:relative inset-y-0 left-0 z-50 w-64 glass-panel border-r border-white/5 transition-transform duration-300 flex flex-col shrink-0 h-full"
+        >
             <!-- Logo -->
-            <div class="h-20 flex items-center px-6 border-b border-white/5">
+            <div class="py-6 flex items-center px-6 border-b border-white/5 shrink-0">
                 <a href="<?= url('admin') ?>" class="flex items-center gap-3 text-white">
                     <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
                         <i class="fas fa-bolt text-sm"></i>
@@ -119,7 +122,7 @@
             </div>
 
             <!-- Nav -->
-            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+            <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-2 font-outfit">Main</p>
                 
                 <?php $cp = $currentPage ?? ''; ?>
@@ -137,6 +140,11 @@
                 <a href="<?= url('admin/software') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'software' ? 'bg-purple-600/20 text-purple-400 font-medium border border-purple-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
                     <i class="fas fa-box w-5 text-center <?= $cp == 'software' ? 'text-purple-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
                     <span>Software</span>
+                </a>
+
+                <a href="<?= url('manage_versions.php') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'versions' ? 'bg-indigo-600/20 text-indigo-400 font-medium border border-indigo-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-code-branch w-5 text-center <?= $cp == 'versions' ? 'text-indigo-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Versiones</span>
                 </a>
 
                 <a href="<?= url('admin/categories') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'categories' ? 'bg-pink-600/20 text-pink-400 font-medium border border-pink-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
@@ -159,11 +167,38 @@
                     <span>Tipo de Licencias</span>
                 </a>
 
+                <a href="<?= url('admin/badges') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'badges' ? 'bg-cyan-600/20 text-cyan-400 font-medium border border-cyan-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-certificate w-5 text-center <?= $cp == 'badges' ? 'text-cyan-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Badges</span>
+                </a>
+
+                <a href="<?= url('admin/analytics') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'analytics' ? 'bg-blue-600/20 text-blue-400 font-medium border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-chart-line w-5 text-center <?= $cp == 'analytics' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Analíticas</span>
+                </a>
+
+                <a href="<?= url('admin/reports') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'reports' ? 'bg-red-600/20 text-red-400 font-medium border border-red-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-flag w-5 text-center <?= $cp == 'reports' ? 'text-red-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Reportes</span>
+                    <?php
+                    try {
+                        $reportCount = \App\Database::getInstance()->getConnection()->query("SELECT COUNT(*) FROM reports WHERE status='pending'")->fetchColumn();
+                        if ($reportCount > 0):
+                    ?>
+                        <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"><?= $reportCount ?></span>
+                    <?php endif; } catch(\Exception $e) {} ?>
+                </a>
+
                 <p class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-6 font-outfit">System</p>
 
-                <a href="<?= url('admin/settings') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'settings' ? 'bg-emerald-600/20 text-emerald-400 font-medium border border-emerald-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
-                    <i class="fas fa-cog w-5 text-center <?= $cp == 'settings' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                <a href="<?= url('admin/settings') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'settings' ? 'bg-orange-600/20 text-orange-400 font-medium border border-orange-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-cog w-5 text-center <?= $cp == 'settings' ? 'text-orange-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
                     <span>Configuración</span>
+                </a>
+
+                <a href="<?= url('admin/updates') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'updates' ? 'bg-emerald-600/20 text-emerald-400 font-medium border border-emerald-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-sync-alt w-5 text-center <?= $cp == 'updates' ? 'text-emerald-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Actualizaciones</span>
                 </a>
                 
                 <a href="<?= url('admin/profile') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'profile' ? 'bg-orange-600/20 text-orange-400 font-medium border border-orange-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
@@ -173,7 +208,7 @@
             </nav>
 
             <!-- User Panel -->
-            <div class="p-4 border-t border-white/5">
+            <div class="p-4 border-t border-white/5 shrink-0">
                 <div class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 backdrop-blur-sm">
                     <div class="w-9 h-9 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 flex items-center justify-center text-white text-xs font-bold border border-white/10">
                         <?= strtoupper(substr($_SESSION['admin_username'] ?? 'A', 0, 1)) ?>
@@ -193,7 +228,7 @@
         <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" x-transition.opacity></div>
 
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col h-screen overflow-hidden bg-transparent">
+        <div class="flex-1 flex flex-col h-full overflow-hidden bg-transparent">
             
             <!-- Topbar (Glass) -->
             <header class="h-20 glass-panel border-b border-white/5 flex items-center justify-between px-8 z-30 sticky top-0">

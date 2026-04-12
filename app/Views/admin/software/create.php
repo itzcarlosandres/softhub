@@ -27,7 +27,7 @@ ob_start();
     <form action="<?= url('admin/software/store') ?>" method="POST" enctype="multipart/form-data" class="space-y-8">
         
         <!-- Información Básica -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
             <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <h3 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
@@ -56,9 +56,9 @@ ob_start();
                            placeholder="Ej: Google LLC">
                 </div>
                 
-                <div>
+                <div class="category-select-wrapper">
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Categoría <span class="text-pink-500">*</span></label>
-                    <select name="category_id" required
+                    <select name="category_id" id="category_id" required
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all [&>option]:bg-gray-900">
                         <option value="">Seleccionar categoría...</option>
                         <?php foreach ($categories as $cat): ?>
@@ -108,7 +108,7 @@ ob_start();
         </div>
         
         <!-- Descripción -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
              <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 relative z-10 gap-4">
@@ -158,7 +158,7 @@ ob_start();
         </div>
         
         <!-- Detalles Técnicos -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
              <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <h3 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
@@ -169,7 +169,7 @@ ob_start();
                  <!-- Tipo de Licencia -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tipo de Licencia <span class="text-pink-500">*</span></label>
-                    <select name="license" required
+                    <select name="license" id="license_id" required
                             class="w-full md:w-1/3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 transition-all [&>option]:bg-gray-900">
                         <?php foreach ($licensesList as $licOption): ?>
                             <option value="<?= htmlspecialchars($licOption['slug']) ?>"><?= htmlspecialchars($licOption['name']) ?></option>
@@ -190,6 +190,11 @@ ob_start();
                             <input type="checkbox" name="platforms[]" value="Android" class="platform-checkbox w-4 h-4 rounded border-gray-600 text-green-500 focus:ring-green-500 bg-gray-700 mr-2">
                             <i class="fab fa-android text-green-500 mr-2 group-hover:scale-110 transition-transform"></i>
                             <span class="text-sm text-gray-300 group-hover:text-white">Android</span>
+                        </label>
+                        <label class="flex items-center p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group">
+                            <input type="checkbox" name="platforms[]" value="Torrent" class="platform-checkbox w-4 h-4 rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-700 mr-2">
+                            <i class="fas fa-magnet text-red-400 mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-sm text-gray-300 group-hover:text-white">Torrent / Magnet</span>
                         </label>
                     </div>
                 </div>
@@ -241,12 +246,37 @@ ob_start();
                     <i class="fas fa-rocket text-yellow-400"></i> Publicación
                 </h3>
                 
-                <div class="flex items-center p-4 bg-white/5 rounded-xl border border-white/5">
-                    <input type="checkbox" name="featured" id="featured" value="1"
-                           class="w-5 h-5 rounded border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700">
-                    <label for="featured" class="ml-3 text-sm font-medium text-white cursor-pointer select-none">
-                        Marcar como destacado
-                    </label>
+                <div class="space-y-4">
+                    <div class="flex items-center p-4 bg-white/5 rounded-xl border border-white/5">
+                        <input type="checkbox" name="featured" id="featured" value="1"
+                               class="w-5 h-5 rounded border-gray-600 text-yellow-500 focus:ring-yellow-500 bg-gray-700">
+                        <label for="featured" class="ml-3 text-sm font-medium text-white cursor-pointer select-none">
+                            Marcar como destacado
+                        </label>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Badge (Etiqueta Predefinida)</label>
+                        <select name="badge_id" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500/50 transition-all text-sm appearance-none cursor-pointer [&>option]:bg-gray-900 [&>option]:text-white">
+                            <option value="">-- Sin Badge --</option>
+                            <?php foreach ($badges as $badge): ?>
+                                <option value="<?= $badge['id'] ?>">
+                                    <?= htmlspecialchars($badge['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="text-[10px] text-gray-500 mt-2">Selecciona un badge de los que has creado en la sección "Badges".</p>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Badge Personalizado (Opcional - Texto libre)</label>
+                        <div class="relative">
+                            <input type="text" name="custom_badge" 
+                                   placeholder="Ej: PREMIUM, OFERTA, V0.1..."
+                                   class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500/50 transition-all text-sm font-bold uppercase">
+                             <i class="fas fa-edit absolute right-3 top-2.5 text-gray-600 text-xs"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,7 +324,7 @@ function addPlatformSection(platform) {
         <div id="platform-section-${platform}" class="platform-section animate-fade-in" data-platform="${platform}">
             <div class="bg-white/5 border-l-4 border-purple-500 p-4 mb-4 rounded-r-xl">
                 <h3 class="font-bold text-white flex items-center">
-                    <i class="fab fa-${getPlatformIcon(platform)} text-purple-400 mr-2 text-xl"></i>
+                    <i class="${getPlatformIconClass(platform)} text-purple-400 mr-2 text-xl"></i>
                     ${platform}
                 </h3>
             </div>
@@ -328,18 +358,34 @@ function addPlatformLink(platform, index) {
                 ${index > 0 ? `<button type="button" onclick="removeLink('${linkId}')" class="text-red-400 hover:text-red-300 text-xs font-semibold flex items-center bg-red-500/10 px-2 py-1 rounded"><i class="fas fa-trash mr-1"></i>Eliminar</button>` : ''}
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${platform !== 'Torrent' ? `
                 <div class="md:col-span-2">
                     <label class="block text-xs text-gray-500 mb-1">Arquitectura / Versión</label>
                     <input type="text" name="download_links[${platform}][${index}][version]"
                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-purple-500/50 outline-none"
                            placeholder="Ej: 64-bit, ARM">
                 </div>
+                ` : ''}
                 <div class="md:col-span-2">
-                    <label class="block text-xs text-gray-500 mb-1">URL de Descarga <span class="text-red-400">*</span></label>
-                    <input type="url" name="download_links[${platform}][${index}][url]" required
+                    <label class="block text-xs text-gray-500 mb-1">URL de Descarga (Magnet) <span class="text-red-400">*</span></label>
+                    <input type="${platform === 'Torrent' ? 'text' : 'url'}" name="download_links[${platform}][${index}][url]"
+                           ${platform === 'Torrent' ? '' : 'required'}
                            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-blue-300 text-sm focus:border-purple-500/50 outline-none font-mono"
-                           placeholder="https://...">
+                           placeholder="${platform === 'Torrent' ? 'magnet:?xt=... (opcional si subes archivo)' : 'https://...'}">
                 </div>
+                ${platform === 'Torrent' ? `
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">O sube un archivo .torrent</label>
+                    <div class="flex items-center gap-3">
+                        <label class="cursor-pointer flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 text-green-400 text-xs font-semibold rounded-lg transition-all">
+                            <i class="fas fa-upload"></i> Seleccionar .torrent
+                            <input type="file" accept=".torrent" name="download_links[${platform}][${index}][torrent_file]"
+                                   class="hidden" onchange="showTorrentName(this)">
+                        </label>
+                        <span class="torrent-filename text-gray-500 text-xs italic">Ningún archivo seleccionado</span>
+                    </div>
+                </div>
+                ` : ''}
                 <div>
                    <label class="block text-xs text-gray-500 mb-1">Tamaño</label>
                     <input type="text" name="download_links[${platform}][${index}][size]"
@@ -369,6 +415,15 @@ function removeLink(linkId) {
     document.getElementById('link-' + linkId)?.remove();
 }
 
+function showTorrentName(input) {
+    const label = input.closest('div').querySelector('.torrent-filename');
+    if (label) {
+        label.textContent = input.files.length > 0 ? input.files[0].name : 'Ningún archivo seleccionado';
+        label.classList.toggle('text-green-400', input.files.length > 0);
+        label.classList.toggle('text-gray-500', input.files.length === 0);
+    }
+}
+
 function updateEmptyMessage() {
     const msg = document.getElementById('empty-message');
     if (activePlatforms.size === 0) {
@@ -378,9 +433,14 @@ function updateEmptyMessage() {
     }
 }
 
-function getPlatformIcon(platform) {
-    const icons = { 'Windows': 'windows', 'Mac': 'apple', 'Linux': 'linux', 'Android': 'android', 'iOS': 'apple' };
-    return icons[platform] || 'download';
+function getPlatformIconClass(platform) {
+    const icons = { 
+        'Windows': 'fab fa-windows', 
+        'Android': 'fab fa-android', 
+        'iOS': 'fab fa-apple', 
+        'Torrent': 'fas fa-magnet' 
+    };
+    return icons[platform] || 'fas fa-download';
 }
 
 updateEmptyMessage(); // Init
@@ -434,10 +494,87 @@ async function generateAllDescriptions() {
 <?php endif; ?>
 </script>
 
-<!-- TinyMCE CDN -->
-<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js"></script>
+<!-- Tom Select -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+/* Tom Select Dark Theme Overrides */
+.ts-control {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+    color: #fff !important;
+    font-size: 0.875rem !important;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+.ts-dropdown {
+    background: #1e1b4b !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 0.75rem !important;
+    color: #fff !important;
+    margin-top: 0.5rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+    z-index: 9999 !important;
+}
+.ts-dropdown-content {
+    max-height: 280px !important;
+}
+.ts-dropdown .active {
+    background: #4f46e5 !important;
+    color: #fff !important;
+}
+.ts-dropdown .option {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+}
+.ts-dropdown .option:last-child {
+    border-bottom: none;
+}
+.ts-control input {
+    color: #fff !important;
+}
+.ts-wrapper .ts-control {
+    display: flex !important;
+    align-items: center !important;
+}
+/* Highlight color for the search text */
+.ts-dropdown .highlight {
+    background: rgba(79, 70, 229, 0.4) !important;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Tom Select para Categorías
+    if (document.getElementById('category_id')) {
+        new TomSelect("#category_id",{
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Buscar categoría...",
+            allowEmptyOption: false
+        });
+    }
+
+    // Inicializar Tom Select para Licencias
+    if (document.getElementById('license_id')) {
+        new TomSelect("#license_id",{
+            create: false,
+            placeholder: "Buscar licencia...",
+        });
+    }
+
     if (typeof tinymce !== 'undefined') {
         tinymce.init({
             selector: '#description',

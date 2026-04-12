@@ -39,7 +39,14 @@ ob_start();
             </div>
 
             <div id="action-wrapper" class="hidden">
-                <a href="<?= htmlspecialchars($link['download_url']) ?>" id="final-download-btn" target="_blank"
+                <?php
+                $finalUrl = $link['download_url'];
+                // Si la URL no empieza por http:// o https:// ni magnet:, entonces es un archivo local subido (ej. torrents)
+                if (!preg_match('/^https?:\/\//i', $finalUrl) && !preg_match('/^magnet:\?/i', $finalUrl)) {
+                    $finalUrl = url($finalUrl);
+                }
+                ?>
+                <a href="<?= htmlspecialchars($finalUrl) ?>" id="final-download-btn" target="_blank"
                    class="inline-flex items-center justify-center gap-3 bg-blue-600 text-white px-12 py-5 rounded-2xl font-bold text-xl hover:bg-blue-700 transition shadow-xl shadow-blue-500/20 w-full group">
                     <i class="fas fa-cloud-download-alt group-hover:bounce"></i> 
                     Comenzar Descarga
@@ -110,8 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
             actionWrapper.classList.remove('hidden');
             actionWrapper.classList.add('animate-fadeIn');
             
-            // Auto redirect/download
-            window.location.href = finalBtn.href;
+            // Auto redirect/download en nueva pestaña
+            window.open(finalBtn.href, '_blank');
             return;
         }
 

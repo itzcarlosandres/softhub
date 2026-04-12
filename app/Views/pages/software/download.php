@@ -57,27 +57,46 @@ ob_start();
                     <div class="space-y-3">
                         <?php foreach ($downloadLinks as $link): ?>
                             <?php
-                            $iconClass = match($link['platform']) {
-                                'Windows' => 'fab fa-windows',
-                                'Mac' => 'fab fa-apple',
-                                'Linux' => 'fab fa-linux',
-                                'Android' => 'fab fa-android',
-                                'iOS' => 'fab fa-apple',
+                             $isTorrent = ($link['platform'] === 'Torrent');
+                             $isMagnet      = $isTorrent && str_starts_with($link['download_url'], 'magnet:');
+                             $isTorrentFile = $isTorrent && !$isMagnet;
+
+                             $iconClass = match(true) {
+                                $isMagnet      => 'fas fa-magnet',
+                                $isTorrentFile => 'fas fa-file-arrow-down',
+                                $link['platform'] === 'Windows' => 'fab fa-windows',
+                                $link['platform'] === 'Mac'     => 'fab fa-apple',
+                                $link['platform'] === 'Linux'   => 'fab fa-linux',
+                                $link['platform'] === 'Android' => 'fab fa-android',
+                                $link['platform'] === 'iOS'     => 'fab fa-apple',
                                 default => 'fas fa-download'
-                            };
-                            ?>
+                             };
+
+                             $label    = $isMagnet ? 'Magnet Link' : ($isTorrentFile ? 'Archivo .torrent' : htmlspecialchars($link['platform']));
+                             $subLabel = $isMagnet ? 'Abrir con cliente torrent' : ($isTorrentFile ? 'Descargar archivo .torrent' : (!empty($link['file_size']) ? htmlspecialchars($link['file_size']) : 'Descarga directa'));
+
+                             $bgColor = $isTorrent ? 'bg-green-50/50 dark:bg-green-900/10' : 'bg-white dark:bg-gray-800';
+                             $borderColor = $isTorrent ? 'border-green-200 dark:border-green-500/30' : 'border-gray-100 dark:border-gray-700';
+                             $hoverBorder = $isTorrent ? 'hover:border-green-500' : 'hover:border-blue-500';
+                             $hoverShadow = $isTorrent ? 'hover:shadow-green-500/20' : 'hover:shadow-blue-500/5';
+                             
+                             $iconBg = $isTorrent ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-50 dark:bg-gray-900';
+                             $iconColorDefault = $isTorrent ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300';
+                             $iconColorHover = $isTorrent ? 'group-hover:text-green-500' : 'group-hover:text-blue-600';
+                             ?>
                             <a href="<?= url('go/' . encrypt_id($link['id'])) ?>" 
-                               class="flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/5 transition-all group">
+                               target="_blank" rel="noopener"
+                               class="flex items-center justify-between p-5 <?= $bgColor ?> rounded-2xl border <?= $borderColor ?> <?= $hoverBorder ?> <?= $hoverShadow ?> hover:shadow-lg transition-all group">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-600 dark:text-gray-300 group-hover:text-blue-600 transition-colors">
+                                    <div class="w-12 h-12 rounded-xl <?= $iconBg ?> flex items-center justify-center <?= $iconColorDefault ?> <?= $iconColorHover ?> transition-colors">
                                         <i class="<?= $iconClass ?> text-xl"></i>
                                     </div>
                                     <div class="text-left">
-                                        <h3 class="font-bold text-gray-900 dark:text-white"><?= htmlspecialchars($link['platform']) ?></h3>
-                                        <p class="text-xs text-gray-500"><?= !empty($link['file_size']) ? htmlspecialchars($link['file_size']) : 'Descarga directa' ?></p>
+                                        <h3 class="font-bold text-gray-900 dark:text-white"><?= $label ?></h3>
+                                        <p class="text-xs text-gray-500"><?= $subLabel ?></p>
                                     </div>
                                 </div>
-                                <i class="fas fa-chevron-right text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
+                                <i class="fas fa-chevron-right text-gray-300 <?= $isTorrent ? 'group-hover:text-green-500' : 'group-hover:text-blue-500' ?> group-hover:translate-x-1 transition-all"></i>
                             </a>
                         <?php endforeach; ?>
                     </div>
@@ -90,7 +109,8 @@ ob_start();
                                 <p class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Iniciando descarga</p>
                             </div>
                             
-                            <a href="<?= url('go/' . encrypt_id($software['id'])) ?>?type=soft" id="download-link" 
+                            <a href="<?= url('go/' . encrypt_id($software['id'])) ?>?type=soft" id="download-link"
+                               target="_blank" rel="noopener"
                                class="inline-flex items-center justify-center gap-3 bg-black dark:bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-xl shadow-gray-200 dark:shadow-none">
                                 <i class="fas fa-download"></i> Descargar Ahora
                             </a>
@@ -104,8 +124,15 @@ ob_start();
                         function updateCountdown() {
                             countdownElement.textContent = countdown;
                             if (countdown === 0) {
-                                window.location.href = downloadLink.href;
                                 countdownElement.textContent = "✓";
+                                // Crear enlace invisible y hacer clic (evita bloqueo de popups)
+                                const a = document.createElement('a');
+                                a.href = downloadLink.href;
+                                a.target = '_blank';
+                                a.rel = 'noopener';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
                             } else {
                                 countdown--;
                                 setTimeout(updateCountdown, 1000);

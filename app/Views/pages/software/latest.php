@@ -88,7 +88,7 @@ $description = 'Descubre las últimas adiciones a nuestra colección de software
                                 <?php if (!empty($soft['price']) && $soft['price'] > 0): ?>
                                     <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded-full">PREMIUM</span>
                                 <?php else: ?>
-                                    <span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">GRATIS</span>
+                                    <span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full"><?= !empty($soft['license_name']) ? strtoupper(htmlspecialchars($soft['license_name'])) : 'GRATIS' ?></span>
                                 <?php endif; ?>
                             </div>
                             <span class="w-10 h-10 rounded-full bg-gray-900 dark:bg-gray-700 text-white flex items-center justify-center group-hover:bg-blue-600 group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all">
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="flex items-center gap-3">
                         ${isPremium ? 
                             `<span class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded-full">PREMIUM</span>` : 
-                            `<span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">GRATIS</span>`
+                            `<span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full">${(soft.license_name || 'GRATIS').toUpperCase()}</span>`
                         }
                     </div>
                     <span class="w-10 h-10 rounded-full bg-gray-900 dark:bg-gray-700 text-white flex items-center justify-center group-hover:bg-blue-600 group-hover:shadow-lg group-hover:shadow-blue-500/20 transition-all">

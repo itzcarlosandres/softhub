@@ -8,10 +8,10 @@
     <div class="max-w-7xl mx-auto px-6 relative z-10">
         <div class="text-center max-w-3xl mx-auto">
             <h1 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6 transition-colors">
-                Descubre lo Mejor del Software
+                <?= __('blog_hero_title', 'Descubre lo Mejor del Software') ?>
             </h1>
             <p class="text-lg text-gray-500 dark:text-gray-400 mb-8 font-medium">
-                Tutoriales, noticias exclusivas, comparativas y los mejores trucos para llevar tu Productividad y Rendimiento al máximo nivel.
+                <?= __('blog_hero_subtitle', 'Tutoriales, noticias exclusivas, comparativas y los mejores trucos para llevar tu Productividad y Rendimiento al máximo nivel.') ?>
             </p>
             
             <!-- Buscador del Blog -->

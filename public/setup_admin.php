@@ -4,7 +4,16 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Incluir autoloader y database
-require_once __DIR__ . '/../app/Database.php';
+define('BASE_PATH', dirname(__DIR__));
+require_once BASE_PATH . '/app/EnvLoader.php';
+EnvLoader::load(BASE_PATH);
+
+require_once BASE_PATH . '/app/Database.php';
+
+// Bloquear en produccion
+if (env('APP_ENV') === 'production') {
+    die("Error: El script de configuracion inicial esta deshabilitado en produccion por seguridad.");
+}
 
 use App\Database;
 

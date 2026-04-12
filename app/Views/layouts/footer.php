@@ -15,20 +15,20 @@
                             <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors">SoftHub<span class="text-blue-600 dark:text-blue-400">.</span></span>
                         </div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3 leading-tight transition-colors">
-                            Tu centro de software premium.
+                            <?= __('footer_tagline', 'Tu centro de software premium.') ?>
                         </h3>
                         <p class="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed max-w-sm transition-colors">
-                            Descarga, actualiza y gestiona tus herramientas digitales favoritas desde una sola plataforma segura y verificada.
+                            <?= __('footer_description', 'Descarga, actualiza y gestiona tus herramientas digitales favoritas desde una sola plataforma segura y verificada.') ?>
                         </p>
                     </div>
                     
                     <div class="flex flex-wrap gap-3 relative z-10">
                         <a href="<?= url('software') ?>" class="inline-flex items-center gap-2 bg-gray-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-gray-800 dark:hover:bg-blue-700 transition-all duration-300 shadow-lg shadow-gray-900/10 hover:shadow-gray-900/20 hover:-translate-y-0.5">
-                            <span>Explorar Software</span>
+                            <span><?= __('explore_software', 'Explorar Software') ?></span>
                             <i class="fas fa-arrow-right text-sm"></i>
                         </a>
                         <a href="<?= url('about') ?>" class="inline-flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 transition-all duration-300">
-                            <span>Conócenos</span>
+                            <span><?= __('about_us', 'Conócenos') ?></span>
                         </a>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                 <!-- Box 2: Quick Links (Medium) -->
                 <div class="md:col-span-6 lg:col-span-4 bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-700 flex flex-col transition-colors">
                     <h4 class="font-bold text-gray-900 dark:text-white mb-6 text-lg flex items-center gap-2 transition-colors">
-                        <i class="fas fa-compass text-blue-500 dark:text-blue-400"></i> Navegación Rápida
+                        <i class="fas fa-compass text-blue-500 dark:text-blue-400"></i> <?= __('quick_navigation', 'Navegación Rápida') ?>
                     </h4>
                     <ul class="space-y-1 flex-1">
                         <li>
@@ -45,7 +45,7 @@
                                     <span class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
                                         <i class="fas fa-bolt"></i>
                                     </span>
-                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">Novedades</span>
+                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors"><?= __('news', 'Novedades') ?></span>
                                 </div>
                                 <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 group-hover:text-blue-400 text-xs transition-colors"></i>
                             </a>
@@ -56,7 +56,7 @@
                                     <span class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
                                         <i class="fas fa-fire"></i>
                                     </span>
-                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors">Más Populares</span>
+                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors"><?= __('most_popular', 'Más Populares') ?></span>
                                 </div>
                                 <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 group-hover:text-purple-400 text-xs transition-colors"></i>
                             </a>
@@ -67,7 +67,7 @@
                                     <span class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
                                         <i class="fas fa-th-large"></i>
                                     </span>
-                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">Categorías</span>
+                                    <span class="font-medium text-gray-600 dark:text-gray-300 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors"><?= __('categories', 'Categorías') ?></span>
                                 </div>
                                 <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600 group-hover:text-green-400 text-xs transition-colors"></i>
                             </a>
@@ -82,8 +82,8 @@
                     <div class="absolute bottom-0 left-0 w-40 h-40 bg-purple-600 rounded-full blur-[60px] opacity-20 -ml-10 -mb-10 transition-all duration-700 group-hover:opacity-40"></div>
                     
                     <div class="relative z-10">
-                        <h4 class="font-bold text-xl mb-2">Comunidad</h4>
-                        <p class="text-gray-400 text-sm mb-6">Únete a más de 50k usuarios.</p>
+                        <h4 class="font-bold text-xl mb-2"><?= __('community', 'Comunidad') ?></h4>
+                        <p class="text-gray-400 text-sm mb-6"><?= __('join_community_text', 'Únete a más de 50k usuarios.') ?></p>
                         
                         <div class="flex flex-col gap-3">
                             <?php 
@@ -136,13 +136,13 @@
                 <!-- Box 4: Legal & Info (Full Width Strip) -->
                 <div class="md:col-span-12 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 text-sm transition-colors">
                     <div class="flex items-center gap-6 text-gray-500 dark:text-gray-400 transition-colors">
-                        <a href="<?= url('privacy') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Privacidad</a>
-                        <a href="<?= url('terms') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Términos</a>
-                        <a href="<?= url('cookies') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Cookies</a>
-                        <a href="<?= url('contact') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Contacto</a>
+                        <a href="<?= url('privacy') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"><?= __('privacy', 'Privacidad') ?></a>
+                        <a href="<?= url('terms') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"><?= __('terms', 'Términos') ?></a>
+                        <a href="<?= url('cookies') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"><?= __('cookies', 'Cookies') ?></a>
+                        <a href="<?= url('contact') ?>" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"><?= __('contact', 'Contacto') ?></a>
                     </div>
                     <div class="text-gray-400 dark:text-gray-500 transition-colors">
-                        &copy; <?= date('Y') ?> SoftHub Inc. Diseñado con <i class="fas fa-heart text-red-400 dark:text-red-500 mx-1 animate-pulse"></i> por el equipo.
+                        &copy; <?= date('Y') ?> SoftHub Inc. <?= __('designed_with_love', 'Diseñado con <i class="fas fa-heart text-red-400 dark:text-red-500 mx-1 animate-pulse"></i> por el equipo.') ?>
                     </div>
                 </div>
             </div>

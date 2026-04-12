@@ -170,7 +170,7 @@ ob_start();
                                                 <?php if ($isPremium): ?>
                                                     <span class="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">PREMIUM</span>
                                                 <?php else: ?>
-                                                    <span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest">GRATIS</span>
+                                                    <span class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase tracking-widest"><?= !empty($soft['license_name']) ? strtoupper(htmlspecialchars($soft['license_name'])) : 'GRATIS' ?></span>
                                                 <?php endif; ?>
                                                 <span class="w-8 h-8 rounded-full bg-gray-900 dark:bg-gray-700 text-white flex items-center justify-center group-hover:bg-blue-600 transition-colors">
                                                     <i class="fas fa-arrow-right text-[10px]"></i>

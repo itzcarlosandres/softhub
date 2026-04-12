@@ -11,14 +11,14 @@ foreach ($settingsModel->getAll() as $setting) {
 }
 
 // Stats Simples para Sidebar
-$totalSoftware = $db->query("SELECT COUNT(*) as total FROM software WHERE status = 'approved'")->fetch()['total'];
-$totalCategories = $db->query("SELECT COUNT(*) as total FROM categories")->fetch()['total'];
-$totalDownloads = $db->query("SELECT SUM(downloads) as total FROM software")->fetch()['total'];
+$totalSoftware = $db->query("SELECT COUNT(*) as total FROM software WHERE status = 'approved'")->fetch()['total'] ?? 0;
+$totalCategories = $db->query("SELECT COUNT(*) as total FROM categories")->fetch()['total'] ?? 0;
+$totalDownloads = $db->query("SELECT SUM(downloads) as total FROM software")->fetch()['total'] ?? 0;
 
 ob_start();
 ?>
 
-<div class="max-w-7xl animate-fade-in-up pb-24">
+<div class="max-w-7xl pb-24">
     
     <!-- Title -->
     <div class="mb-8">
@@ -115,6 +115,26 @@ ob_start();
                                    value="<?= $settings['items_per_page']['setting_value'] ?? 24 ?>"
                                    min="12" max="48" step="6"
                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                        </div>
+                </div>
+
+                <!-- Localización Settings -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-green-400/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
+                    
+                    <h2 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
+                        <i class="fas fa-language text-green-400"></i> Localización
+                    </h2>
+                    <p class="text-gray-400 text-sm mb-6 relative z-10">Configura el idioma predeterminado del sitio.</p>
+    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Idioma Predeterminado</label>
+                            <select name="setting_default_language" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 [&>option]:bg-gray-900 transition-all">
+                                <option value="es" <?= ($settings['default_language']['setting_value'] ?? 'es') == 'es' ? 'selected' : '' ?>>Español (ES)</option>
+                                <option value="en" <?= ($settings['default_language']['setting_value'] ?? 'es') == 'en' ? 'selected' : '' ?>>English (EN)</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-2">Este será el idioma inicial para nuevos visitantes.</p>
                         </div>
                     </div>
                 </div>
@@ -430,7 +450,7 @@ ob_start();
                                         </label>
                                     </div>
                                 <?php endif; ?>
-                                <input type="file" name="site_logo" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
+                                <input type="file" name="site_logo" accept=".jpg,.jpeg,.png,.svg,.webp" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
                             </div>
 
                             <!-- Favicon Upload -->
@@ -445,7 +465,7 @@ ob_start();
                                         </label>
                                     </div>
                                 <?php endif; ?>
-                                <input type="file" name="site_favicon" accept="image/*" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
+                                <input type="file" name="site_favicon" accept=".ico,.png,.svg,.jpg,.jpeg" class="block w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer">
                             </div>
                         </div>
 
@@ -627,10 +647,10 @@ ob_start();
                 </div>
 
                 <!-- Save Button (Floating) -->
-                <div class="fixed bottom-6 right-6 z-50">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-full shadow-lg shadow-blue-600/30 flex items-center gap-3 transition-all hover:scale-105 hover:-translate-y-1 backdrop-blur-md border border-white/10">
+                <div class="fixed bottom-10 right-10 z-[60]">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-full shadow-[0_10px_40px_rgba(37,99,235,0.4)] flex items-center gap-3 transition-all hover:scale-105 hover:-translate-y-1 backdrop-blur-md border border-white/20 active:scale-95">
                         <i class="fas fa-save text-xl"></i>
-                        <span class="text-lg">Guardar Configuración</span>
+                        <span class="text-lg font-outfit">Guardar Configuración</span>
                     </button>
                     <!-- Loading Indicator (Hidden by default) -->
                     <div id="save-loader" class="absolute inset-0 bg-blue-700/80 rounded-full flex items-center justify-center hidden">

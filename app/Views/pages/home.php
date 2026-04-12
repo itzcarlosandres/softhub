@@ -115,7 +115,7 @@ ob_start();
                 </span>
             <?php else: ?>
                 <span class="inline-block py-1 px-3 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold tracking-wide uppercase mb-6 shadow-sm">
-                    <i class="fas fa-bolt mr-1"></i> Actualizado en tiempo real
+                    <i class="fas fa-bolt mr-1"></i> <?= __('updated_real_time', 'Actualizado en tiempo real') ?>
                 </span>
             <?php endif; ?>
 
@@ -138,7 +138,7 @@ ob_start();
                 <h1 class="hero-title-custom"><?= $parsedTitle ?></h1>
             <?php else: ?>
                 <h1 class="hero-title-custom">
-                    Tus mejores Aplicaciones<br>en un solo lugar<span class="typewriter-cursor text-white">|</span>
+                    <?= __('hero_default_title', 'Tus mejores Aplicaciones<br>en un solo lugar') ?><span class="typewriter-cursor text-white">|</span>
                 </h1>
             <?php endif; ?>
             
@@ -150,10 +150,10 @@ ob_start();
                                name="q"
                                id="search-input-live"
                                class="search-input-custom"
-                               placeholder="¿Qué quieres buscar?" 
+                               placeholder="<?= __('search_placeholder', '¿Qué quieres buscar?') ?>" 
                                autocomplete="off"
                                required>
-                        <button type="submit" class="search-button-custom" aria-label="Buscar">
+                        <button type="submit" class="search-button-custom" aria-label="<?= __('search_button', 'Buscar') ?>">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -173,25 +173,25 @@ ob_start();
                 <div class="text-center">
                     <div class="text-2xl font-bold text-white"><?= number_format($totalSoftware) ?></div>
                     <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-cube text-blue-400"></i> Programas
+                        <i class="fas fa-cube text-blue-400"></i> <?= __('programs', 'Programas') ?>
                     </div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-400"><?= $updatesToday > 0 ? '+' . $updatesToday : 'Diarias' ?></div>
+                    <div class="text-2xl font-bold text-blue-400"><?= $updatesToday > 0 ? '+' . $updatesToday : __('diarias', 'Diarias') ?></div>
                     <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-bolt text-purple-400"></i> Actualizaciones
+                        <i class="fas fa-bolt text-purple-400"></i> <?= __('updates', 'Actualizaciones') ?>
                     </div>
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-white">100%</div>
                     <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-check-circle text-blue-300"></i> Verificado
+                        <i class="fas fa-check-circle text-blue-300"></i> <?= __('verified', 'Verificado') ?>
                     </div>
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-purple-400">24/7</div>
                     <div class="text-[10px] md:text-xs text-white/80 font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                        <i class="fas fa-headset text-blue-400"></i> Soporte
+                        <i class="fas fa-headset text-blue-400"></i> <?= __('support', 'Soporte') ?>
                     </div>
                 </div>
             </div>
@@ -238,214 +238,113 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="lg:col-span-9">
             
             <!-- Software Destacado Slider -->
+    <!-- Software Destacado Slider (Option 3 Design) -->
     <section class="mb-16">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3 transition-colors">
-                <i class="fas fa-star text-yellow-500"></i>
-                Software Destacado
-            </h2>
-            <div class="flex gap-2">
-                <button onclick="prevSlide()" class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-chevron-left text-gray-600 dark:text-gray-300"></i>
-                </button>
-                <button onclick="nextSlide()" class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <i class="fas fa-chevron-right text-gray-600 dark:text-gray-300"></i>
-                </button>
+        <div class="mb-8 relative z-10">
+            <div class="flex items-center gap-6">
+                <h2 class="text-xl font-extrabold text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-star text-pink-500 text-lg"></i>
+                    <?= __('featured_software', 'Software Destacado') ?>
+                </h2>
+                <div class="h-px w-full bg-gradient-to-r from-pink-500/50 to-transparent"></div>
             </div>
         </div>
         
-        <div class="relative overflow-hidden">
-            <!-- Slider Container with Native Scroll -->
-            <div id="featuredSlider" class="flex transition-transform duration-500 ease-in-out">
+        <!-- Swiper Container -->
+        <div class="swiper featured-swiper w-full px-1 py-4">
+            <div class="swiper-wrapper">
                 <?php
-                // Usamos la variable inyectada $mostDownloaded como el carrusel de software destacado
-                foreach ($mostDownloaded as $soft):
+                $neonClasses = [
+                    ['border' => 'hover:border-pink-500/50 hover:shadow-[0_0_15px_rgba(236,72,153,0.15)]', 'iconBg' => 'group-hover:bg-pink-500'],
+                    ['border' => 'hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)]', 'iconBg' => 'group-hover:bg-cyan-500'],
+                    ['border' => 'hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)]', 'iconBg' => 'group-hover:bg-yellow-500'],
+                    ['border' => 'hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)]', 'iconBg' => 'group-hover:bg-purple-500'],
+                    ['border' => 'hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]', 'iconBg' => 'group-hover:bg-emerald-500']
+                ];
+                $neonIndex = 0;
+                
+                foreach ($featured as $soft): 
+                    $neonClass = $neonClasses[$neonIndex % count($neonClasses)];
+                    $neonIndex++;
                 ?>
-                    <div class="flex-shrink-0 px-2" style="width: 20%">
-                        <?php 
-                        $originalShowDesc = $showDesc;
-                        $originalShowDownloads = $showDownloads;
-                        $originalShowPrice = $showPrice;
-                        $originalShowButton = $showButton;
-                        $originalShowBadges = $showBadges;
+                <!-- Slide Item -->
+                <div class="swiper-slide cursor-pointer h-auto">
+                    <a href="<?= url('software/' . htmlspecialchars($soft['slug'])) ?>" class="flex h-full items-center gap-4 bg-white dark:bg-[#14161b] border border-gray-200 dark:border-gray-800 p-3 rounded-2xl <?= $neonClass['border'] ?> transition-all duration-300 group">
                         
-                        $showDesc = false;
-                        $showDownloads = false;
-                        $showPrice = false;
-                        $showButton = false;
-                        // Evaluamos trending para el badge
-                        $isTrending = in_array($soft['id'], $trendingIds);
+                        <?php if (!empty($soft['icon'])): ?>
+                            <img src="<?= url(htmlspecialchars($soft['icon'])) ?>" class="w-14 h-14 rounded-xl object-contain bg-gray-50 dark:bg-black/50 p-1 shrink-0 shadow-sm" alt="<?= htmlspecialchars($soft['name']) ?>">
+                        <?php else: ?>
+                            <div class="w-14 h-14 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                                <i class="fas fa-cube text-gray-400 text-xl"></i>
+                            </div>
+                        <?php endif; ?>
                         
-                        include __DIR__ . '/../partials/software_card.php';
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="font-bold text-gray-900 dark:text-white text-sm truncate"><?= htmlspecialchars($soft['name']) ?></h3>
+                            <p class="text-gray-500 text-[11px] truncate flex items-center gap-1 mt-0.5">
+                                <?php if (!empty($soft['category_name'])): ?>
+                                    <i class="fas fa-folder text-gray-400"></i> <?= htmlspecialchars(__($soft['category_name'], $soft['category_name'])) ?>
+                                <?php endif; ?>
+                                <?php if (!empty($soft['version'])): ?>
+                                    • v<?= htmlspecialchars($soft['version']) ?>
+                                <?php endif; ?>
+                            </p>
+                        </div>
                         
-                        // Restaurar variables globales para el grid
-                        $showDesc = $originalShowDesc;
-                        $showDownloads = $originalShowDownloads;
-                        $showPrice = $originalShowPrice;
-                        $showButton = $originalShowButton;
-                        $showBadges = $originalShowBadges;
-                        ?>
-                    </div>
+                        <div class="shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center <?= $neonClass['iconBg'] ?> group-hover:text-white transition-colors">
+                            <i class="fas fa-arrow-right text-xs text-gray-400 group-hover:text-white transition-colors"></i>
+                        </div>
+                    </a>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
-        
-        <!-- Indicadores (solo desktop) -->
-        <div class="hidden md:flex justify-center gap-2 mt-6" id="sliderIndicators">
-            <!-- Se generan dinámicamente con JavaScript -->
-        </div>
     </section>
+
+    <!-- Swiper CSS/JS Inclusions -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     
     <script>
-    let currentSlide = 0;
-    const slider = document.getElementById('featuredSlider');
-    const slides = slider.children;
-    const totalSlides = slides.length;
-    let slidesToShow = 5; // Desktop - 5 items
-    
-    // Responsive slides
-    function updateSlidesToShow() {
-        if (window.innerWidth < 768) {
-            slidesToShow = 2; // Móvil: 2 items
-        } else if (window.innerWidth < 1024) {
-            slidesToShow = 3; // Tablet: 3 items
-        } else {
-            slidesToShow = 5; // Desktop: 5 items
-        }
-        // Actualizar el ancho de cada slide según columnas visibles
-        const slideWidth = 100 / slidesToShow;
-        Array.from(slides).forEach(slide => {
-            slide.style.width = slideWidth + '%';
-            slide.style.minWidth = slideWidth + '%';
-            slide.style.flexShrink = '0';
-        });
-        updateSlider();
-        createIndicators();
-    }
-    
-    function updateSlider() {
-        const slideWidth = 100 / slidesToShow;
-        slider.style.transform = `translateX(-${currentSlide * slideWidth}%)`;
-    }
-    
-    function nextSlide() {
-        const maxSlide = Math.ceil(totalSlides / slidesToShow) - 1;
-        currentSlide = (currentSlide + 1) > maxSlide ? 0 : currentSlide + 1;
-        updateSlider();
-        updateIndicators();
-    }
-    
-    function prevSlide() {
-        const maxSlide = Math.ceil(totalSlides / slidesToShow) - 1;
-        currentSlide = (currentSlide - 1) < 0 ? maxSlide : currentSlide - 1;
-        updateSlider();
-        updateIndicators();
-    }
-    
-    function goToSlide(index) {
-        currentSlide = index;
-        updateSlider();
-        updateIndicators();
-    }
-    
-    function createIndicators() {
-        const indicatorsContainer = document.getElementById('sliderIndicators');
-        indicatorsContainer.innerHTML = '';
-        const numIndicators = Math.ceil(totalSlides / slidesToShow);
-        
-        for (let i = 0; i < numIndicators; i++) {
-            const indicator = document.createElement('button');
-            indicator.className = `w-2 h-2 rounded-full transition ${i === currentSlide ? 'bg-blue-600 w-8' : 'bg-gray-300 dark:bg-gray-700'}`;
-            indicator.onclick = () => goToSlide(i);
-            indicatorsContainer.appendChild(indicator);
-        }
-    }
-    
-    function updateIndicators() {
-        const indicators = document.querySelectorAll('#sliderIndicators button');
-        indicators.forEach((indicator, index) => {
-            if (index === currentSlide) {
-                indicator.className = 'w-8 h-2 rounded-full transition bg-blue-600';
-            } else {
-                indicator.className = 'w-2 h-2 rounded-full transition bg-gray-300 dark:bg-gray-700';
+    document.addEventListener('DOMContentLoaded', function () {
+        const swiper = new Swiper('.featured-swiper', {
+            slidesPerView: 1.15, // Mobile: shows 1 card and a bit of the next
+            spaceBetween: 12,
+            grabCursor: true,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            breakpoints: {
+                480: { slidesPerView: 1.3, spaceBetween: 12 },
+                640: { slidesPerView: 2.1, spaceBetween: 16 },
+                768: { slidesPerView: 2.5, spaceBetween: 16 },
+                1024: { slidesPerView: 3, spaceBetween: 16 }
             }
         });
-    }
-    
-    // Auto-play
-    let autoplayInterval = setInterval(nextSlide, 5000);
-    
-    // Pausar en hover
-    slider.addEventListener('mouseenter', () => {
-        clearInterval(autoplayInterval);
     });
-    
-    slider.addEventListener('mouseleave', () => {
-        autoplayInterval = setInterval(nextSlide, 5000);
-    });
-    
-    // Soporte Táctil (Swipe)
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    slider.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        clearInterval(autoplayInterval); // Pausar autoplay al tocar
-    }, { passive: true });
-    
-    slider.addEventListener('touchmove', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-    }, { passive: true });
-    
-    slider.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-        autoplayInterval = setInterval(nextSlide, 5000); // Reanudar autoplay
-    });
-    
-    function handleSwipe() {
-        if (touchStartX === 0 || touchEndX === 0) return;
-        
-        const swipeDistance = touchStartX - touchEndX;
-        const minSwipeDistance = 50; // Umbral en píxeles
-        
-        if (Math.abs(swipeDistance) > minSwipeDistance) {
-            if (swipeDistance > 0) {
-                // Swipe Izquierda -> Siguiente
-                nextSlide();
-            } else {
-                // Swipe Derecha -> Anterior
-                prevSlide();
-            }
-        }
-        
-        // Reset valores
-        touchStartX = 0;
-        touchEndX = 0;
-    }
-    
-    // Responsive
-    window.addEventListener('resize', updateSlidesToShow);
-    
-    // Inicializar
-    updateSlidesToShow();
     </script>
+
     
     <!-- Últimos agregados -->
     <section class="mb-16">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3 transition-colors">
-                <i class="fas fa-clock text-blue-500"></i>
-                Últimos agregados
-            </h2>
-            <a href="<?= url('software') ?>" class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-2 group">
-                Ver todos
-                <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-            </a>
+        <div class="mb-10 relative z-10">
+            <div class="flex items-center gap-6">
+                <h2 class="text-xl font-extrabold text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-clock text-blue-500 text-lg"></i>
+                    <?= __('latest_added', 'Últimos agregados') ?>
+                </h2>
+                <div class="h-px w-full bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+                <a href="<?= url('software') ?>" class="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition flex items-center justify-center shadow-sm flex-shrink-0 group" title="<?= __('view_all', 'Ver todos') ?>">
+                    <i class="fas fa-arrow-right text-gray-400 group-hover:text-blue-500 transition-colors text-xs"></i>
+                </a>
+            </div>
         </div>
         
-        <!-- Grid de Software - Cards Minimalistas -->
-        <div id="latest-software-grid" class="grid grid-cols-<?= $colsMobile ?> md:grid-cols-<?= $colsTablet ?> lg:grid-cols-<?= $colsDesktop ?> gap-6 relative transition-opacity duration-300">
+        <!-- Dynamic View of Software - Grid or List -->
+        <div id="latest-software-grid" class="<?= $latestLayout == 'list' ? 'flex flex-col gap-4' : 'grid grid-cols-' . $colsMobile . ' md:grid-cols-' . $colsTablet . ' lg:grid-cols-' . $colsDesktop . ' gap-6' ?> relative transition-opacity duration-300">
             <?php 
             if (!empty($latest)): 
                 $colors = ['blue', 'purple', 'green', 'orange', 'red', 'indigo', 'pink', 'teal'];
@@ -456,16 +355,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     $colorIndex++;
                     $isTrending = in_array($soft['id'], $trendingIds);
                     
-                    include __DIR__ . '/../partials/software_card.php';
+                    if ($latestLayout == 'list') {
+                        include __DIR__ . '/../partials/software_list_item.php';
+                    } else {
+                        include __DIR__ . '/../partials/software_card.php';
+                    }
                 endforeach; 
             else: 
             ?>
                 <div class="col-span-full text-center py-20">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="fas fa-inbox text-gray-300 text-5xl"></i>
                     </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">No hay software disponible</h3>
-                    <p class="text-gray-500 text-lg">Vuelve pronto para ver nuevos programas</p>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2"><?= __('no_software_available', 'No hay software disponible') ?></h3>
+                    <p class="text-gray-500 text-lg"><?= __('come_back_soon', 'Vuelve pronto para ver nuevos programas') ?></p>
                 </div>
             <?php endif; ?>
         </div>
@@ -481,9 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 transition-colors">
                         <i class="fas fa-chart-line text-blue-500"></i>
-                        TOP 10
+                        <?= __('top_10', 'TOP 10') ?>
                     </h2>
-                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-md font-bold">LIVE</span>
+                    <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-md font-bold"><?= __('live', 'LIVE') ?></span>
                 </div>
                 
                 <!-- List -->
@@ -563,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <!-- Footer -->
                 <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50">
-                    <p class="text-xs text-center text-gray-400 dark:text-gray-500 font-semibold">Actualizado en tiempo real</p>
+                    <p class="text-xs text-center text-gray-400 dark:text-gray-500 font-semibold"><?= __('updated_real_time', 'Actualizado en tiempo real') ?></p>
                 </div>
             </div>
         </aside>

@@ -2,19 +2,24 @@
 ob_start(); 
 ?>
 
-<!-- Hero Section -->
-<section class="bg-white dark:bg-gray-900 py-12 border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
+<!-- Premium Luxe Header -->
+<div class="bg-white dark:bg-gray-900 pt-16 pb-6 transition-colors duration-300">
     <div class="container mx-auto px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-4 transition-colors">
-                Catálogo <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500">Premium</span>
-            </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-400 transition-colors">
-                Explora nuestra colección curada de software verificado y seguro
-            </p>
+        <div class="mb-8 relative z-10">
+            <span class="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-[0.2em] block mb-1"><?= __('latest_uppercase', 'ÚLTIMOS') ?></span>
+            <div class="flex items-center gap-6">
+                <h1 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white whitespace-nowrap tracking-tight">
+                    <?= __('programs', 'Programas') ?> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500">Full</span>
+                </h1>
+                <div class="h-px w-full bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+                <div class="hidden md:flex items-center gap-2 flex-shrink-0">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"><?= __('free_and_full', 'Gratis y Full') ?></span>
+                </div>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
 <!-- Main Content -->
 <div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-12 transition-colors duration-300">
@@ -26,23 +31,22 @@ ob_start();
             <div class="lg:col-span-9">
                 <!-- Filtros -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8 transition-colors">
-                    <form method="GET" class="flex flex-wrap gap-4 items-end">
-                        <!-- Ordenar por -->
+                    <form method="GET" class="flex flex-wrap gap-4 items-end">                         <!-- Ordenar por -->
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Ordenar por</label>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2"><?= __('sort_by', 'Ordenar por') ?></label>
                             <select name="sort" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-medium transition-colors">
-                                <option value="latest" <?= ($_GET['sort'] ?? '') == 'latest' ? 'selected' : '' ?>>Más recientes</option>
-                                <option value="downloads" <?= ($_GET['sort'] ?? '') == 'downloads' ? 'selected' : '' ?>>Más descargados</option>
-                                <option value="rating" <?= ($_GET['sort'] ?? '') == 'rating' ? 'selected' : '' ?>>Mejor valorados</option>
-                                <option value="name" <?= ($_GET['sort'] ?? '') == 'name' ? 'selected' : '' ?>>Nombre A-Z</option>
+                                <option value="latest" <?= ($_GET['sort'] ?? '') == 'latest' ? 'selected' : '' ?>><?= __('most_recent', 'Más recientes') ?></option>
+                                <option value="downloads" <?= ($_GET['sort'] ?? '') == 'downloads' ? 'selected' : '' ?>><?= __('most_downloaded', 'Más descargados') ?></option>
+                                <option value="rating" <?= ($_GET['sort'] ?? '') == 'rating' ? 'selected' : '' ?>><?= __('best_rated', 'Mejor valorados') ?></option>
+                                <option value="name" <?= ($_GET['sort'] ?? '') == 'name' ? 'selected' : '' ?>><?= __('name_az', 'Nombre A-Z') ?></option>
                             </select>
                         </div>
                         
                         <!-- Categoría -->
                         <div class="flex-1 min-w-[200px]">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Categoría</label>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2"><?= __('category', 'Categoría') ?></label>
                             <select name="category" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-medium transition-colors">
-                                <option value="">Todas las categorías</option>
+                                <option value=""><?= __('all_categories', 'Todas las categorías') ?></option>
                                 <?php if (!empty($categories)): ?>
                                     <?php foreach ($categories as $cat): ?>
                                         <option value="<?= $cat['id'] ?>" <?= ($_GET['category'] ?? '') == $cat['id'] ? 'selected' : '' ?>>
@@ -56,7 +60,7 @@ ob_start();
                         <!-- Botón -->
                         <div>
                             <button type="submit" class="bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl">
-                                <i class="fas fa-filter mr-2"></i>Filtrar
+                                <i class="fas fa-filter mr-2"></i><?= __('filter', 'Filtrar') ?>
                             </button>
                         </div>
                     </form>
@@ -66,7 +70,7 @@ ob_start();
                 <?php if (!empty($software)): ?>
                     <div class="mb-8">
                         <p class="text-gray-600 dark:text-gray-400 text-lg transition-colors">
-                            <span class="font-bold text-gray-900 dark:text-white"><?= count($software) ?></span> programas encontrados
+                            <span class="font-bold text-gray-900 dark:text-white"><?= count($software) ?></span> <?= __('found_programs', 'programas encontrados') ?>
                         </p>
                     </div>
                 <?php endif; ?>
@@ -102,9 +106,9 @@ ob_start();
                             <div>
                                 <!-- Icon -->
                                 <div class="mb-4 relative">
-                                    <div class="w-14 h-14 bg-white dark:bg-gray-700 rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                                    <div class="w-14 h-14 bg-white dark:bg-gray-700 rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-500 overflow-hidden">
                                         <?php if ($iconPath): ?>
-                                            <img src="<?= url($iconPath) ?>" alt="<?= htmlspecialchars($soft['name']) ?>" class="w-12 h-12 object-contain p-1">
+                                            <img src="<?= url($iconPath) ?>" alt="<?= htmlspecialchars($soft['name']) ?>" class="w-full h-full object-cover">
                                         <?php else: ?>
                                             <i class="fas fa-cube text-2xl text-<?= $color ?>-600 dark:text-<?= $color ?>-400"></i>
                                         <?php endif; ?>
@@ -163,10 +167,10 @@ ob_start();
                                     <?php if ($isPremium): ?>
                                         <span class="text-xs font-bold text-purple-600 dark:text-purple-400">$<?= number_format($soft['price'], 2) ?></span>
                                     <?php else: ?>
-                                        <span class="text-xs font-bold text-gray-900 dark:text-white">Gratis</span>
+                                        <span class="text-xs font-bold text-gray-900 dark:text-white"><?= !empty($soft['license_name']) ? htmlspecialchars($soft['license_name']) : 'Gratis' ?></span>
                                     <?php endif; ?>
                                     <span class="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-full text-xs font-medium group-hover:bg-<?= $color ?>-600 dark:group-hover:bg-<?= $color ?>-500 transition-all transform group-hover:translate-x-1 inline-flex items-center gap-1">
-                                        Ver <i class="fas fa-arrow-right text-xs"></i>
+                                        <?= __('view', 'Ver') ?> <i class="fas fa-arrow-right text-xs"></i>
                                     </span>
                                 </div>
                             </div>
@@ -189,8 +193,8 @@ ob_start();
                             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
                                 <i class="fas fa-inbox text-gray-300 dark:text-gray-600 text-5xl"></i>
                             </div>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">No se encontraron programas</h3>
-                            <p class="text-gray-500 dark:text-gray-400 text-lg transition-colors">Intenta ajustar los filtros de búsqueda</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors"><?= __('no_programs_found', 'No se encontraron programas') ?></h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-lg transition-colors"><?= __('try_adjusting_filters', 'Intenta ajustar los filtros de búsqueda') ?></p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -216,12 +220,12 @@ ob_start();
                     <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 relative">
                         <h3 class="text-2xl font-bold flex items-center">
                             <i class="fas fa-fire mr-2"></i>
-                            Trending
+                            <?= __('trending', 'Trending') ?>
                         </h3>
-                        <p class="text-white/80 text-sm mt-1">Los más populares</p>
+                        <p class="text-white/80 text-sm mt-1"><?= __('most_popular', 'Los más populares') ?></p>
                         <div class="absolute top-4 right-4">
                             <span class="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                                🔥 HOT
+                                🔥 <?= __('hot', 'HOT') ?>
                             </span>
                         </div>
                     </div>

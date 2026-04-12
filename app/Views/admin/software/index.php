@@ -203,6 +203,10 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                                         <i class="fas fa-pencil-alt text-xs"></i>
                                     </a>
                                     
+                                    <a href="<?= url('manage_versions.php?software_id=' . $soft['id']) ?>" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-indigo-600 hover:text-white flex items-center justify-center text-gray-400 transition-all" title="Gestionar Versiones">
+                                        <i class="fas fa-code-branch text-xs"></i>
+                                    </a>
+                                    
                                     <?php if ($soft['featured']): ?>
                                         <a href="<?= url('admin/software/toggle-featured/' . $soft['id']) ?>" class="w-8 h-8 rounded-lg bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black flex items-center justify-center transition-all" title="Quitar Destacado">
                                             <i class="fas fa-star text-xs"></i>

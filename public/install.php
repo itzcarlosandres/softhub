@@ -5,7 +5,16 @@
  * Ejecuta este archivo una vez para crear las tablas necesarias
  */
 
-require_once __DIR__ . '/app/Database.php';
+define('BASE_PATH', dirname(__DIR__));
+require_once BASE_PATH . '/app/EnvLoader.php';
+EnvLoader::load(BASE_PATH);
+
+require_once BASE_PATH . '/app/Database.php';
+
+// Bloquear en produccion
+if (env('APP_ENV') === 'production') {
+    die("Error: El script de instalacion esta deshabilitado en produccion por seguridad.");
+}
 
 use App\Database;
 

@@ -57,8 +57,8 @@ class GeminiService
         $prompt .= "IMPORTANTE: Usa el siguiente formato HTML estricto y optimizado:\n\n";
         $prompt .= "1. Usa etiquetas <p> para párrafos.\n";
         $prompt .= "2. Usa <strong> para resaltar el nombre del software y 3-4 frases clave.\n";
-        $prompt .= "3. Sección de características EXACTAMENTE así:\n";
-        $prompt .= "   <h2>Características Principales</h2>\n";
+        $prompt .= "3. Sección de características EXACTAMENTE así (usa el idioma solicitado):\n";
+        $prompt .= "   <h2>Características Principales</h2> (o 'Main Features' en inglés)\n";
         $prompt .= "   <ul>\n";
         $prompt .= "   <li><strong>Nombre Característica:</strong> Explicación breve.</li>\n";
         $prompt .= "   </ul>\n";
@@ -67,7 +67,7 @@ class GeminiService
         
         $prompt .= "Ejemplo de salida deseada:\n";
         $prompt .= "<p><strong>Nombre</strong> es una soluci&oacute;n que permite...</p>\n";
-        $prompt .= "<h2>Caracter&iacute;sticas Principales</h2>\n";
+        $prompt .= "<h2>Características Principales</h2>\n";
         $prompt .= "<ul>\n";
         $prompt .= "<li><strong>Funci&oacute;n 1:</strong> Detalle.</li>\n";
         $prompt .= "</ul>\n\n";

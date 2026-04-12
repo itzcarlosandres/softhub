@@ -22,7 +22,12 @@ class Database
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $e) {
-            die("Error de conexión: " . $e->getMessage());
+            error_log("Database Connection Error: " . $e->getMessage());
+            if (env('APP_DEBUG', false)) {
+                die("Error de conexión: " . $e->getMessage());
+            } else {
+                die("Error interno del servidor. Por favor, intente más tarde.");
+            }
         }
     }
 

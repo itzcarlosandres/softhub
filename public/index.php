@@ -3,16 +3,21 @@
 // Start session
 session_start();
 
-// Error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 // Define base path
 define('BASE_PATH', dirname(__DIR__));
 
 // Load environment variables
 require_once BASE_PATH . '/app/EnvLoader.php';
 EnvLoader::load(BASE_PATH);
+
+// Error reporting (Now it's safe to use env())
+if (env('APP_DEBUG', false)) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
 
 // Load helpers
 require_once BASE_PATH . '/app/helpers.php';

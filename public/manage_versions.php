@@ -12,6 +12,13 @@ EnvLoader::load(BASE_PATH);
 require_once BASE_PATH . '/app/helpers.php';
 require_once BASE_PATH . '/app/Database.php';
 
+// Proteccion de Ruta (Requiere Admin)
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // Si no está autenticado, redirigir al login
+    header('Location: /admin/login');
+    exit;
+}
+
 // Autoloader
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -56,14 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($result) {
                 // ACTUALIZACIÓN AUTOMÁTICA: Sincronizar con la tabla principal de software
-                $stmtMain = $db->prepare("UPDATE software SET version = ? WHERE id = ?");
+                $stmtMain = $db->prepare("UPDATE software SET version = ?, updated_at = NOW() WHERE id = ?");
                 $stmtMain->execute([$_POST['version_number'], $_POST['software_id']]);
 
-                // SYNC DOWNLOAD LINKS
+                // SYNC DOWNLOAD LINKS (Always clear old links first)
+                $db->prepare("DELETE FROM download_links WHERE software_id = ?")->execute([$_POST['software_id']]);
+
                 if (!empty($_POST['download_url'])) {
-                    // Limpiar enlaces viejos
-                    $db->prepare("DELETE FROM download_links WHERE software_id = ?")->execute([$_POST['software_id']]);
-                    
                     $urls = explode("\n", $_POST['download_url']);
                     foreach ($urls as $url) {
                         $url = trim($url);
@@ -71,18 +77,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                         $platform = 'Windows';
                         $urlLower = strtolower($url);
-                        if (strpos($urlLower, '#mac') !== false || strpos($urlLower, '#macos') !== false) $platform = 'Mac';
-                        elseif (strpos($urlLower, '#linux') !== false) $platform = 'Linux';
-                        elseif (strpos($urlLower, '#android') !== false || strpos($urlLower, '.apk') !== false) $platform = 'Android';
-                        elseif (strpos($urlLower, '#ios') !== false || strpos($urlLower, '.ipa') !== false) $platform = 'iOS';
                         
-                        $cleanUrl = explode('#', $url)[0];
+                        // Detection Logic - Updated for Torrent support
+                        if (str_starts_with($urlLower, 'magnet:') || str_contains($urlLower, '#torrent')) {
+                            $platform = 'Torrent';
+                        } elseif (strpos($urlLower, '#android') !== false || strpos($urlLower, '.apk') !== false) {
+                            $platform = 'Android';
+                        } elseif (strpos($urlLower, '#ios') !== false || strpos($urlLower, '.ipa') !== false) {
+                            $platform = 'iOS';
+                        }
+                        
+                        $cleanUrl = trim(explode('#', $url)[0]);
                         
                         $stmtLink = $db->prepare("INSERT INTO download_links (software_id, platform, download_url, version, file_size) VALUES (?, ?, ?, ?, ?)");
                         $stmtLink->execute([
                             $_POST['software_id'],
                             $platform,
-                            trim($cleanUrl),
+                            $cleanUrl,
                             $_POST['version_number'],
                             $_POST['file_size'] ?? ''
                         ]);
@@ -138,7 +149,7 @@ if (isset($_GET['software_id'])) {
 }
 ?>
 <?php
-$currentPage = 'software';
+$currentPage = 'versions';
 $pageTitle = 'Gestión de Versiones';
 ob_start();
 ?>
@@ -520,33 +531,23 @@ let links = [];
 function detectOS(url) {
     const urlLower = url.toLowerCase();
     
-    if (urlLower.includes('#win') || urlLower.includes('#windows')) return 'windows';
-    if (urlLower.includes('#mac') || urlLower.includes('#macos')) return 'mac';
-    if (urlLower.includes('#linux')) return 'linux';
-    if (urlLower.includes('#android')) return 'android';
-    if (urlLower.includes('#ios')) return 'ios';
-    if (urlLower.includes('#all') || urlLower.includes('#multi')) return 'all';
-    
-    if (urlLower.includes('.apk')) return 'android';
-    if (urlLower.includes('.ipa')) return 'ios';
+    if (urlLower.startsWith('magnet:') || urlLower.includes('#torrent')) return 'torrent';
+    if (urlLower.includes('#android') || urlLower.includes('.apk')) return 'android';
+    if (urlLower.includes('#ios') || urlLower.includes('.ipa')) return 'ios';
     if (urlLower.includes('.exe') || urlLower.includes('.msi')) return 'windows';
-    if (urlLower.includes('.dmg') || urlLower.includes('.pkg')) return 'mac';
-    if (urlLower.includes('.deb') || urlLower.includes('.rpm') || urlLower.includes('.appimage')) return 'linux';
     
-    return 'unknown';
+    return 'windows'; // Default to windows if nothing else
 }
 
 function getOSConfig(os) {
     const configs = {
         'windows': { name: 'Windows', icon: 'fab fa-windows', color: 'blue', text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-        'mac': { name: 'macOS', icon: 'fab fa-apple', color: 'gray', text: 'text-gray-300', bg: 'bg-white/5', border: 'border-white/10' },
-        'linux': { name: 'Linux', icon: 'fab fa-linux', color: 'yellow', text: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20' },
-        'android': { name: 'Android', icon: 'fab fa-android', color: 'green', text: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/20' },
-        'ios': { name: 'iOS', icon: 'fab fa-app-store-ios', color: 'slate', text: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/20' },
-        'all': { name: 'Multiplataforma', icon: 'fas fa-globe', color: 'purple', text: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
-        'unknown': { name: 'Desconocido', icon: 'fas fa-link', color: 'gray', text: 'text-gray-500', bg: 'bg-white/5', border: 'border-white/10' }
+        'android': { name: 'Android', icon: 'fab fa-android', color: 'green', text: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20' },
+        'ios': { name: 'iOS', icon: 'fab fa-apple', color: 'gray', text: 'text-gray-400', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
+        'torrent': { name: 'Torrent / Magnet', icon: 'fas fa-magnet', color: 'red', text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+        'all': { name: 'Multiplataforma', icon: 'fas fa-globe', color: 'purple', text: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' }
     };
-    return configs[os] || configs['unknown'];
+    return configs[os] || configs['windows'];
 }
 
 function addLink() {

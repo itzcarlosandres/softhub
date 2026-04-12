@@ -80,13 +80,12 @@ if (!function_exists('auto_assign_badges')) {
             AND status = 'approved'
         ");
         
-        // Badge UPDATED: Actualizado hace menos de 7 días
+        // Badge UPDATED: Solo si está marcado manualmente o tiene una versión superior (Lógica simplificada)
+        // Por ahora, evitemos que se auto-asigne a lo que es NUEVO.
         $db->exec("
             UPDATE software 
-            SET badge_updated = 1 
-            WHERE updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-            AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)
-            AND status = 'approved'
+            SET badge_updated = 0 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 3 DAY)
         ");
         
         // Badge TRENDING: Top 10 más descargados del mes

@@ -26,7 +26,7 @@ $showAI = ($aiEnabled && $aiEnabled['setting_value'] == '1');
 ob_start();
 ?>
 
-<div class="max-w-5xl animate-fade-in-up pb-24">
+<div class="max-w-5xl pb-24">
     
     <!-- Title -->
     <div class="mb-8">
@@ -58,7 +58,7 @@ ob_start();
     <form action="<?= url('admin/software/update/' . $software['id']) ?>" method="POST" enctype="multipart/form-data" class="space-y-8">
         
         <!-- Información Básica -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
             <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <h3 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
@@ -84,9 +84,9 @@ ob_start();
                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all placeholder-gray-600">
                 </div>
                 
-                <div>
+                <div class="category-select-wrapper">
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Categoría <span class="text-pink-500">*</span></label>
-                    <select name="category_id" required
+                    <select name="category_id" id="category_id" required
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all [&>option]:bg-gray-900">
                         <option value="">Seleccionar categoría...</option>
                         <?php foreach ($categories as $cat): ?>
@@ -99,7 +99,7 @@ ob_start();
                 
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tipo de Licencia <span class="text-pink-500">*</span></label>
-                    <select name="license" required
+                    <select name="license" id="license_id" required
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all [&>option]:bg-gray-900">
                         <option value="">Seleccionar licencia...</option>
                         <?php foreach ($licensesList as $licOption): ?>
@@ -151,7 +151,7 @@ ob_start();
         </div>
         
         <!-- Descripción -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
              <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 relative z-10 gap-4">
@@ -184,7 +184,7 @@ ob_start();
         </div>
         
         <!-- Detalles Técnicos -->
-        <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+        <div class="glass-panel p-8 rounded-2xl relative">
              <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
             
             <h3 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
@@ -192,6 +192,31 @@ ob_start();
             </h3>
             
             <div class="space-y-6 relative z-10">
+                 <!-- Sistemas Operativos -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sistemas Operativos <span class="text-pink-500">*</span></label>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <?php 
+                        $platforms = array_map('trim', explode(',', $software['operating_system'] ?? '')); 
+                        ?>
+                        <label class="flex items-center p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group">
+                            <input type="checkbox" name="platforms[]" value="Windows" <?= in_array('Windows', $platforms) ? 'checked' : '' ?> class="platform-checkbox w-4 h-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-700 mr-2">
+                            <i class="fab fa-windows text-blue-400 mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-sm text-gray-300 group-hover:text-white">Windows</span>
+                        </label>
+                        <label class="flex items-center p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group">
+                            <input type="checkbox" name="platforms[]" value="Android" <?= in_array('Android', $platforms) ? 'checked' : '' ?> class="platform-checkbox w-4 h-4 rounded border-gray-600 text-green-500 focus:ring-green-500 bg-gray-700 mr-2">
+                            <i class="fab fa-android text-green-500 mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-sm text-gray-300 group-hover:text-white">Android</span>
+                        </label>
+                        <label class="flex items-center p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group">
+                            <input type="checkbox" name="platforms[]" value="Torrent" <?= in_array('Torrent', $platforms) ? 'checked' : '' ?> class="platform-checkbox w-4 h-4 rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-700 mr-2">
+                            <i class="fas fa-magnet text-red-400 mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-sm text-gray-300 group-hover:text-white">Torrent / Magnet</span>
+                        </label>
+                    </div>
+                </div>
+                
                  <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Requisitos del Sistema</label>
                     <textarea name="requirements" rows="3"
@@ -304,6 +329,29 @@ ob_start();
                         </label>
                     </div>
 
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Badge (Etiqueta Predefinida)</label>
+                        <select name="badge_id" class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500/50 transition-all text-sm appearance-none cursor-pointer [&>option]:bg-gray-900 [&>option]:text-white">
+                            <option value="">-- Sin Badge --</option>
+                            <?php foreach ($badges as $badge): ?>
+                                <option value="<?= $badge['id'] ?>" <?= ($software['badge_id'] == $badge['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($badge['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="text-[10px] text-gray-500 mt-2">Selecciona un badge de los que has creado en la sección "Badges".</p>
+                    </div>
+
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Badge Personalizado (Opcional - Texto libre)</label>
+                        <div class="relative">
+                            <input type="text" name="custom_badge" value="<?= htmlspecialchars($software['custom_badge'] ?? '') ?>"
+                                   placeholder="Ej: PREMIUM, OFERTA, V0.1..."
+                                   class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500/50 transition-all text-sm font-bold uppercase">
+                             <i class="fas fa-edit absolute right-3 top-2.5 text-gray-600 text-xs"></i>
+                        </div>
+                    </div>
+
                     <p class="text-[10px] text-gray-400 mt-2">
                         <i class="fas fa-info-circle text-blue-400 mr-1"></i>
                         Los badges "Nuevo", "Actualizado" y "Trending" se asignan automáticamente por el sistema.
@@ -380,10 +428,87 @@ async function generateAllDescriptions() {
 <?php endif; ?>
 </script>
 
-<!-- TinyMCE CDN -->
-<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.2/tinymce.min.js"></script>
+<!-- Tom Select -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<style>
+/* Tom Select Dark Theme Overrides */
+.ts-control {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+    color: #fff !important;
+    font-size: 0.875rem !important;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+}
+.ts-wrapper.focus .ts-control {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+.ts-dropdown {
+    background: #1e1b4b !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 0.75rem !important;
+    color: #fff !important;
+    margin-top: 0.5rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+    z-index: 9999 !important;
+}
+.ts-dropdown-content {
+    max-height: 280px !important;
+}
+.ts-dropdown .active {
+    background: #4f46e5 !important;
+    color: #fff !important;
+}
+.ts-dropdown .option {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+}
+.ts-dropdown .option:last-child {
+    border-bottom: none;
+}
+.ts-control input {
+    color: #fff !important;
+}
+.ts-wrapper .ts-control {
+    display: flex !important;
+    align-items: center !important;
+}
+/* Highlight color for the search text */
+.ts-dropdown .highlight {
+    background: rgba(79, 70, 229, 0.4) !important;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Tom Select para Categorías
+    if (document.getElementById('category_id')) {
+        new TomSelect("#category_id",{
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Buscar categoría...",
+            allowEmptyOption: false
+        });
+    }
+
+    // Inicializar Tom Select para Licencias
+    if (document.getElementById('license_id')) {
+        new TomSelect("#license_id",{
+            create: false,
+            placeholder: "Buscar licencia...",
+        });
+    }
+
     if (typeof tinymce !== 'undefined') {
         tinymce.init({
             selector: '#description',

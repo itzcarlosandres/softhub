@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es">
+<?php $currentLang = get_language(); ?>
+<html lang="<?= $currentLang ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,25 +13,36 @@
     <meta name="author" content="<?= seo_site_title() ?>">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
+    <meta name="language" content="<?= $currentLang ?>">
+    
+    <!-- Multi-Language Support (SEO) -->
+    <?php
+    $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+    $cleanUri = strtok($currentUri, '?');
+    ?>
+    <link rel="alternate" hreflang="es" href="<?= url('lang/es') ?>?redirect=<?= urlencode($currentUri) ?>">
+    <link rel="alternate" hreflang="en" href="<?= url('lang/en') ?>?redirect=<?= urlencode($currentUri) ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= url('lang/es') ?>?redirect=<?= urlencode($currentUri) ?>">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
+    <meta property="og:url" content="<?= url($currentUri) ?>">
     <meta property="og:title" content="<?= $title ?? seo_site_title() ?>">
     <meta property="og:description" content="<?= $description ?? seo_site_description() ?>">
     <meta property="og:image" content="<?= $image ?? url('assets/images/og-image.jpg') ?>">
     <meta property="og:site_name" content="<?= seo_site_title() ?>">
-    <meta property="og:locale" content="es_ES">
+    <meta property="og:locale" content="<?= $currentLang == 'es' ? 'es_ES' : 'en_US' ?>">
+    <meta property="og:locale:alternate" content="<?= $currentLang == 'es' ? 'en_US' : 'es_ES' ?>">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
+    <meta name="twitter:url" content="<?= url($currentUri) ?>">
     <meta name="twitter:title" content="<?= $title ?? seo_site_title() ?>">
     <meta name="twitter:description" content="<?= $description ?? seo_site_description() ?>">
     <meta name="twitter:image" content="<?= $image ?? url('assets/images/twitter-card.jpg') ?>">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="<?= url($_SERVER['REQUEST_URI'] ?? '') ?>">
+    <link rel="canonical" href="<?= url($cleanUri) ?>">
     
     <!-- Favicon -->
     <?php
@@ -38,8 +50,8 @@
     $favicon = $settingsModel->get('site_favicon');
     ?>
     <?php if ($favicon): ?>
-        <link rel="icon" type="image/x-icon" href="<?= url($favicon) ?>">
-        <link rel="apple-touch-icon" sizes="180x180" href="<?= url($favicon) ?>">
+        <link rel="icon" href="<?= url($favicon) ?>?v=<?= time() ?>">
+        <link rel="apple-touch-icon" sizes="180x180" href="<?= url($favicon) ?>?v=<?= time() ?>">
     <?php else: ?>
         <link rel="icon" type="image/x-icon" href="<?= url('favicon.ico') ?>">
         <link rel="apple-touch-icon" sizes="180x180" href="<?= url('apple-touch-icon.png') ?>">
@@ -606,7 +618,7 @@
                         <?php else: ?>
                             <!-- Standard Image Logo -->
                             <?php if ($logo): ?>
-                                <img src="<?= url($logo) ?>" 
+                                <img src="<?= url($logo) ?>?v=<?= time() ?>" 
                                      alt="<?= htmlspecialchars($siteName) ?>" 
                                      class="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300">
                             <?php else: ?>
@@ -628,21 +640,38 @@
                 <!-- Center: Nav Links (Modern Pills) -->
                 <nav class="hidden lg:flex items-center justify-center gap-1 bg-gray-100/50 dark:bg-gray-700/50 p-1 rounded-xl border border-gray-200/50 dark:border-gray-600/50 absolute left-1/2 transform -translate-x-1/2">
                     <a href="<?= url() ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg bg-white dark:bg-gray-600 shadow-sm text-sm font-semibold text-gray-900 dark:text-white transition-all hover:text-blue-600 dark:hover:text-blue-400">
-                        <i class="fas fa-home text-blue-500"></i> Inicio
+                        <i class="fas fa-home text-blue-500"></i> <?= __('home', 'Inicio') ?>
                     </a>
                     <a href="<?= url('categories') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
-                        <i class="fas fa-th-large text-gray-400"></i> Categorías
+                        <i class="fas fa-th-large text-gray-400"></i> <?= __('categories', 'Categorías') ?>
                     </a>
                     <a href="<?= url('software') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
-                        <i class="fas fa-box-open text-gray-400"></i> Programas
+                        <i class="fas fa-box-open text-gray-400"></i> <?= __('programs', 'Programas') ?>
                     </a>
                     <a href="<?= url('blog') ?>" class="flex items-center gap-2 px-5 py-1.5 rounded-lg hover:bg-white/60 dark:hover:bg-gray-600/60 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition hover:shadow-sm">
-                        <i class="fas fa-rss text-gray-400"></i> Blog
+                        <i class="fas fa-rss text-gray-400"></i> <?= __('blog', 'Blog') ?>
                     </a>
                 </nav>
 
                 <!-- Right: Actions -->
                 <div class="flex items-center justify-end gap-2 md:gap-3 flex-1">
+                    <!-- Language Switcher -->
+                    <div class="relative group/lang">
+                        <button class="w-10 h-10 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center transition border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
+                            <i class="fas fa-globe text-sm"></i>
+                        </button>
+                        <div class="absolute right-0 top-full mt-2 w-32 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover/lang:opacity-100 group-hover/lang:visible transition-all duration-200 z-[100] transform origin-top-right group-hover/lang:translate-y-0 translate-y-2">
+                            <div class="p-2 space-y-1">
+                                <a href="<?= url('lang/es') ?>" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'es' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
+                                    <span class="w-5 text-center">🇪🇸</span> Español
+                                </a>
+                                <a href="<?= url('lang/en') ?>" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'en' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
+                                    <span class="w-5 text-center">🇺🇸</span> English
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Botón buscar móvil -->
                     <button class="md:hidden w-10 h-10 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center transition" id="mobile-search-trigger">
                         <i class="fas fa-search"></i>
@@ -663,7 +692,7 @@
                     <!-- User / CTA -->
                     
                     <a href="<?= url('latest') ?>" class="hidden md:flex items-center gap-2 bg-gray-900 text-white px-5 py-2 rounded-xl font-medium text-sm hover:bg-gray-800 transition shadow-sm dark:shadow-none transition-all">
-                        <span>Novedades</span>
+                        <span><?= __('news', 'Novedades') ?></span>
                         <i class="fas fa-arrow-right text-xs"></i>
                     </a>
                 </div>
@@ -678,7 +707,7 @@
         <div id="mobile-menu-panel" class="fixed left-0 top-0 bottom-0 w-64 bg-white shadow-2xl transform -translate-x-full transition-transform duration-300">
             <!-- Header del menú móvil -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <span class="text-xl font-bold text-gray-900">Menú</span>
+                <span class="text-xl font-bold text-gray-900"><?= __('menu', 'Menú') ?></span>
                 <button id="mobile-menu-close" class="p-2 rounded-lg hover:bg-gray-100 transition">
                     <i class="fas fa-times text-gray-700 text-xl"></i>
                 </button>
@@ -688,24 +717,36 @@
             <nav class="p-4 space-y-2">
                 <a href="<?= url() ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-home text-lg w-6"></i>
-                    <span class="font-medium">Inicio</span>
+                    <span class="font-medium"><?= __('home', 'Inicio') ?></span>
                 </a>
                 <a href="<?= url('categories') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-th-large text-lg w-6"></i>
-                    <span class="font-medium">Categorías</span>
+                    <span class="font-medium"><?= __('categories', 'Categorías') ?></span>
                 </a>
                 <a href="<?= url('software') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-box-open text-lg w-6"></i>
-                    <span class="font-medium">Programas</span>
+                    <span class="font-medium"><?= __('programs', 'Programas') ?></span>
                 </a>
                 <a href="<?= url('blog') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-rss text-lg w-6"></i>
-                    <span class="font-medium">Blog</span>
+                    <span class="font-medium"><?= __('blog', 'Blog') ?></span>
                 </a>
                 <a href="<?= url('latest') ?>" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
                     <i class="fas fa-bolt text-lg w-6"></i>
-                    <span class="font-medium">Novedades</span>
+                    <span class="font-medium"><?= __('news', 'Novedades') ?></span>
                 </a>
+                <!-- Language switcher in mobile menu -->
+                <div class="pt-4 border-t border-gray-100 mt-4 overflow-hidden">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2"><?= __('change_language', 'Cambiar Idioma') ?></p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="<?= url('lang/es') ?>" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'es' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
+                            <span>🇪🇸</span> <span class="text-xs font-bold">ES</span>
+                        </a>
+                        <a href="<?= url('lang/en') ?>" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'en' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
+                            <span>🇺🇸</span> <span class="text-xs font-bold">EN</span>
+                        </a>
+                    </div>
+                </div>
             </nav>
         </div>
     </div>
@@ -722,7 +763,7 @@
                 <div class="flex-1 relative">
                     <input type="text" 
                            id="mobile-search-input"
-                           placeholder="Buscar programas, juegos..." 
+                           placeholder="<?= __('search_programs_games', 'Buscar programas, juegos...') ?>" 
                            class="w-full px-4 py-2.5 pl-11 pr-10 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-gray-50"
                            autocomplete="off">
                     <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -738,7 +779,7 @@
             <div id="mobile-search-results" class="overflow-y-auto" style="max-height: calc(100vh - 80px);">
                 <div class="p-4 text-center text-gray-500">
                     <i class="fas fa-search text-4xl mb-3 text-gray-300"></i>
-                    <p>Escribe para buscar programas</p>
+                    <p><?= __('write_to_search', 'Escribe para buscar programas') ?></p>
                 </div>
             </div>
         </div>
@@ -846,7 +887,7 @@
             document.body.style.overflow = '';
             mobileSearchInput.value = '';
             mobileClearSearch.classList.add('hidden');
-            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p>Escribe para buscar programas</p></div>';
+            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p><?= __('search_type_to_search', "Escribe para buscar programas") ?></p></div>';
         }, 300);
     }
     
@@ -876,7 +917,7 @@
                 mobileClearSearch.classList.remove('hidden');
             } else {
                 mobileClearSearch.classList.add('hidden');
-                mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p>Escribe para buscar programas</p></div>';
+                mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p><?= __('search_type_to_search', "Escribe para buscar programas") ?></p></div>';
                 return;
             }
             
@@ -889,18 +930,18 @@
         mobileClearSearch.addEventListener('click', function() {
             mobileSearchInput.value = '';
             mobileClearSearch.classList.add('hidden');
-            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p>Escribe para buscar programas</p></div>';
+            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p><?= __('search_type_to_search', "Escribe para buscar programas") ?></p></div>';
             mobileSearchInput.focus();
         });
     }
     
     function performMobileSearch(query) {
         if (query.length < 2) {
-            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p>Escribe al menos 2 caracteres</p></div>';
+            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p><?= __('search_min_chars', "Escribe al menos 2 caracteres") ?></p></div>';
             return;
         }
         
-        mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando...</div>';
+        mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i><?= __('search_searching', "Buscando...") ?></div>';
         
         fetch(`<?= url('api/search') ?>?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
@@ -913,13 +954,13 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                mobileSearchResults.innerHTML = '<div class="p-4 text-center text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Error en la búsqueda</div>';
+                mobileSearchResults.innerHTML = '<div class="p-4 text-center text-red-500"><i class="fas fa-exclamation-circle mr-2"></i><?= __('search_error', "Error en la búsqueda") ?></div>';
             });
     }
     
     function displayMobileSearchResults(results) {
         if (results.length === 0) {
-            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p>No se encontraron resultados</p></div>';
+            mobileSearchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search text-4xl mb-3 text-gray-300"></i><p><?= __('search_no_results', "No se encontraron resultados") ?></p></div>';
             return;
         }
         
@@ -954,7 +995,7 @@
         html += `
             <div class="border-t border-gray-200 p-4 text-center bg-gray-50">
                 <a href="<?= url('search') ?>?q=${encodeURIComponent(mobileSearchInput.value)}" class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
-                    Ver todos los resultados <i class="fas fa-arrow-right ml-1"></i>
+                    <?= __('search_view_all', "Ver todos los resultados") ?> <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
         `;
@@ -1012,7 +1053,7 @@
         }
         
         // Mostrar loading
-        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando...</div>';
+        searchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i><?= __('search_searching', "Buscando...") ?></div>';
         searchResults.classList.remove('hidden');
         
         // Realizar búsqueda AJAX
@@ -1027,13 +1068,13 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                searchResults.innerHTML = '<div class="p-4 text-center text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>Error en la búsqueda</div>';
+                searchResults.innerHTML = '<div class="p-4 text-center text-red-500"><i class="fas fa-exclamation-circle mr-2"></i><?= __('search_error', "Error en la búsqueda") ?></div>';
             });
     }
     
     function displaySearchResults(results) {
         if (results.length === 0) {
-            searchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search mr-2"></i>No se encontraron resultados</div>';
+            searchResults.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-search mr-2"></i><?= __('search_no_results', "No se encontraron resultados") ?></div>';
             return;
         }
         
@@ -1068,7 +1109,7 @@
         html += `
             <div class="border-t border-gray-200 p-3 text-center">
                 <a href="<?= url('search') ?>?q=${encodeURIComponent(searchInput.value)}" class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
-                    Ver todos los resultados <i class="fas fa-arrow-right ml-1"></i>
+                    <?= __('search_view_all', "Ver todos los resultados") ?> <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
         `;
@@ -1113,8 +1154,8 @@
         
         <!-- Content -->
         <div class="flex-1 min-w-0 pr-2">
-            <p class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-tight mb-0.5">Alguien descargó esto</p>
-            <p id="ln-time" class="text-[10px] text-blue-500 dark:text-blue-400 font-bold">Hace unos segundos</p>
+            <p class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tighter leading-tight mb-0.5"><?= __('someone_downloaded', 'Alguien descargó esto') ?></p>
+            <p id="ln-time" class="text-[10px] text-blue-500 dark:text-blue-400 font-bold"><?= __('just_now', 'Hace unos segundos') ?></p>
         </div>
     </div>
     
@@ -1139,12 +1180,12 @@
             { 
                 software: "<?= addslashes($soft['name']) ?>", 
                 icon: "<?= $baseUrl . '/' . $soft['icon'] ?>", 
-                time: "Hace " + (Math.floor(Math.random() * 10) + 1) + " min" 
+                time: "<?= __('ago', 'Hace') ?> " + (Math.floor(Math.random() * 10) + 1) + " <?= __('min', 'min') ?>" 
             },
             <?php endforeach; ?>
             // Fallbacks reliable if DB is empty
-            { software: "Chrome", icon: "https://cdn-icons-png.flaticon.com/512/888/888846.png", time: "Hace 2 min" },
-            { software: "Android", icon: "https://cdn-icons-png.flaticon.com/512/888/888839.png", time: "Hace 5 min" }
+            { software: "Chrome", icon: "https://cdn-icons-png.flaticon.com/512/888/888846.png", time: "<?= __('ago', 'Hace') ?> 2 <?= __('min', 'min') ?>" },
+            { software: "Android", icon: "https://cdn-icons-png.flaticon.com/512/888/888839.png", time: "<?= __('ago', 'Hace') ?> 5 <?= __('min', 'min') ?>" }
         ];
 
         let notificationTimer = null;

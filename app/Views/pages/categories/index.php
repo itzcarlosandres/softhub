@@ -40,14 +40,19 @@ ob_start();
 
     <div class="container mx-auto px-6 max-w-7xl relative z-10">
         
-        <!-- Header Section -->
-        <div class="text-center mb-20 relative z-10 transition-colors duration-300">
-            <h1 class="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 tracking-tight drop-shadow-sm">
-                Navega por <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500">Categorías</span>
-            </h1>
-            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light leading-relaxed">
-                Descubre las mejores herramientas organizadas para potenciar tu flujo de trabajo y entretenimiento.
-            </p>
+        <!-- Luxe Line Header -->
+        <div class="mb-16 relative z-10">
+            <span class="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-[0.2em] block mb-1">CATEGORY EXPLORER</span>
+            <div class="flex items-center gap-6">
+                <h1 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white whitespace-nowrap tracking-tight">
+                    Navegar <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-500">Categorías</span>
+                </h1>
+                <div class="h-px w-full bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+                <div class="hidden md:flex items-center gap-2 flex-shrink-0">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Global Library</span>
+                </div>
+            </div>
         </div>
         
         <!-- Grid de Categorías -->

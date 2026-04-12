@@ -107,7 +107,7 @@ ob_start();
                     <!-- Footer -->
                     <div class="mt-auto pt-6 border-t border-gray-50 dark:border-gray-700/50 flex items-center justify-between transition-colors">
                         <span class="text-[10px] font-black <?= !empty($soft['price']) && $soft['price'] > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400' ?> uppercase tracking-widest transition-colors">
-                            <?= !empty($soft['price']) && $soft['price'] > 0 ? '$' . number_format($soft['price'], 2) : 'Gratis' ?>
+                            <?= !empty($soft['price']) && $soft['price'] > 0 ? '$' . number_format($soft['price'], 2) : (!empty($soft['license_name']) ? htmlspecialchars($soft['license_name']) : 'Gratis') ?>
                         </span>
                         <div class="w-8 h-8 rounded-full bg-gray-900 dark:bg-gray-700 text-white flex items-center justify-center group-hover:bg-blue-600 dark:group-hover:bg-blue-600 transition-colors">
                             <i class="fas fa-arrow-right text-[10px]"></i>

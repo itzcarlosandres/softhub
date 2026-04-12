@@ -114,6 +114,7 @@ class HomeController extends Controller
         $db = \App\Database::getInstance()->getConnection();
         $settingsModel = new \App\Models\SiteSetting();
         $latestCount = (int)$settingsModel->get('home_latest_count', 12);
+        $latestLayout = $settingsModel->get('home_latest_layout', 'grid');
         
         // Fetch Card Visibility Settings
         $stmtSet = $db->query("SELECT setting_key, setting_value FROM site_settings WHERE setting_key LIKE 'card_show_%'");
@@ -141,7 +142,7 @@ class HomeController extends Controller
             $query .= " AND category_id = ?";
             $params[] = $categoryId;
         }
-        $query .= " ORDER BY created_at DESC LIMIT ?";
+        $query .= " ORDER BY updated_at DESC LIMIT ?";
         $params[] = $latestCount;
         
         $stmt = $db->prepare($query);
@@ -166,7 +167,11 @@ class HomeController extends Controller
             $colorIndex++;
             $isTrending = in_array($soft['id'], $trendingIds);
             
-            include __DIR__ . '/../Views/partials/software_card.php';
+            if ($latestLayout == 'list') {
+                include __DIR__ . '/../Views/partials/software_list_item.php';
+            } else {
+                include __DIR__ . '/../Views/partials/software_card.php';
+            }
         }
         exit;
     }

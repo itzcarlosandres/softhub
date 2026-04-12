@@ -21,6 +21,7 @@ $router->get('/api/latest-software', 'SoftwareController@apiLatest');
 $router->get('/download/:id', 'SoftwareController@download');
 $router->get('/go/:hash', 'GoController@index');
 $router->get('/search', 'SoftwareController@search');
+$router->get('/lang/:lang', 'LanguageController@switch');
 
 // Blog Routes
 $router->get('/blog', 'BlogController@index');
@@ -29,6 +30,9 @@ $router->get('/blog/category/:slug', 'BlogController@category');
 $router->get('/blog/:slug', 'BlogController@show');
 
 // API Routes
+$router->get('/sitemap.xml', function() {
+    require_once BASE_PATH . '/public/sitemap.xml.php';
+});
 $router->get('/api/search', 'ApiController@search');
 
 // Category Routes
@@ -64,6 +68,21 @@ $router->get('/admin/licenses', 'AdminController@licenseList');
 $router->post('/admin/licenses/store', 'AdminController@licenseStore');
 $router->get('/admin/licenses/delete/:id', 'AdminController@licenseDelete');
 
+// Admin Routes - Badges Management
+$router->get('/admin/badges', 'AdminController@badgeList');
+$router->post('/admin/badges/store', 'AdminController@badgeStore');
+$router->get('/admin/badges/delete/:id', 'AdminController@badgeDelete');
+
+// Admin Routes - Reports (Broken Links)
+$router->get('/admin/reports', 'AdminController@reportList');
+$router->get('/admin/reports/resolve/:id', 'AdminController@reportResolve');
+$router->get('/admin/reports/delete/:id', 'AdminController@reportDelete');
+$router->post('/api/report-link', 'AdminController@reportLinkPublic');
+
+// Admin Routes - Analytics
+$router->get('/admin/analytics', 'AdminController@analyticsIndex');
+$router->post('/api/track-view', 'AdminController@trackView');
+
 // Admin Routes - Blog Category Management
 $router->get('/admin/blog-categories', 'AdminController@blogCategoryList');
 $router->post('/admin/blog-categories/store', 'AdminController@blogCategoryStore');
@@ -82,6 +101,10 @@ $router->get('/admin/blog-posts/toggle-featured/:id', 'AdminController@blogPostT
 // Admin Routes - Settings
 $router->get('/admin/settings', 'AdminController@settings');
 $router->post('/admin/settings', 'AdminController@settingsSave');
+
+// Admin Routes - Updates
+$router->get('/admin/updates', 'AdminController@showUpdates');
+$router->post('/admin/updates/install', 'AdminController@handleUpdate');
 
 // Admin Routes - Profile
 $router->get('/admin/profile', 'AdminController@profile');

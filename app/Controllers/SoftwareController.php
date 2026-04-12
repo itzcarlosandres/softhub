@@ -29,7 +29,7 @@ class SoftwareController extends Controller
         
         // Obtener conexión a la base de datos
         $db = \App\Database::getInstance()->getConnection();
-        $query = "SELECT * FROM software WHERE status = 'approved'";
+        $query = "SELECT s.*, l.name as license_name FROM software s LEFT JOIN licenses l ON s.license = l.slug WHERE s.status = 'approved'";
         $params = [];
         
         // Filtro por categoría
@@ -92,9 +92,10 @@ class SoftwareController extends Controller
     {
         $db = \App\Database::getInstance()->getConnection();
         $stmt = $db->query("
-            SELECT s.*, c.name as category_name 
+            SELECT s.*, c.name as category_name, l.name as license_name 
             FROM software s 
             LEFT JOIN categories c ON s.category_id = c.id 
+            LEFT JOIN licenses l ON s.license = l.slug 
             WHERE s.status = 'approved' 
             ORDER BY s.downloads DESC 
             LIMIT 24
