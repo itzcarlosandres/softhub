@@ -71,22 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (!empty($_POST['download_url'])) {
                     $urls = explode("\n", $_POST['download_url']);
-                    foreach ($urls as $url) {
+                    $firstUrl = '';
+                    foreach ($urls as $index => $url) {
                         $url = trim($url);
                         if (empty($url)) continue;
                         
                         $platform = 'Windows';
                         $urlLower = strtolower($url);
                         
-                        // Detection Logic - Updated for Torrent support
+                        // Simplified Detection Logic (Only Windows, Android, Torrent)
                         if (str_starts_with($urlLower, 'magnet:') || str_contains($urlLower, '#torrent')) {
                             $platform = 'Torrent';
                         } elseif (strpos($urlLower, '#android') !== false || strpos($urlLower, '.apk') !== false) {
                             $platform = 'Android';
-                        } elseif (strpos($urlLower, '#ios') !== false || strpos($urlLower, '.ipa') !== false) {
-                            $platform = 'iOS';
                         }
                         
+                        if ($index === 0) $firstUrl = trim(explode('#', $url)[0]);
+
                         $cleanUrl = trim(explode('#', $url)[0]);
                         
                         $stmtLink = $db->prepare("INSERT INTO download_links (software_id, platform, download_url, version, file_size) VALUES (?, ?, ?, ?, ?)");
@@ -97,6 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_POST['version_number'],
                             $_POST['file_size'] ?? ''
                         ]);
+                    }
+
+                    // SYNC MAIN SOFTWARE TABLE with the new version details
+                    if (!empty($firstUrl)) {
+                        $stmtSync = $db->prepare("UPDATE software SET download_url = ?, file_size = ? WHERE id = ?");
+                        $stmtSync->execute([$firstUrl, $_POST['file_size'] ?? '', $_POST['software_id']]);
                     }
                 }
 
@@ -250,7 +257,7 @@ ob_start();
                         <i class="fas fa-plus-circle text-green-400"></i> Nueva Versión
                     </h2>
                 </div>
-                <form method="POST" class="p-5">
+                <form method="POST" class="p-5" onsubmit="addLink(); return true;">
                     <input type="hidden" name="software_id" value="<?= $selectedSoftware['id'] ?>">
                     <input type="hidden" name="action" value="add">
                     
@@ -556,8 +563,8 @@ function addLink() {
     
     if (!rawUrls) return;
     
-    // Separamos por comas, NO por espacios para permitir "URL #tag"
-    const urlArray = rawUrls.split(/[,]+/);
+    // Separamos por comas, espacios o nuevas líneas para ser más flexibles
+    const urlArray = rawUrls.split(/[\s,]+/);
     
     urlArray.forEach(rawUrl => {
         const url = rawUrl.trim();

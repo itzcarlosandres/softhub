@@ -48,9 +48,13 @@ class BlogController extends Controller
             array_shift($posts);
         }
 
+        $settings = new \App\Models\SiteSetting();
+        $title = $settings->get('seo_blog_title', 'Blog y Noticias - SoftHub');
+        $description = $settings->get('seo_blog_description', 'Descubre los mejores tutoriales, noticias y guías sobre software en nuestro blog gratuito.');
+
         return $this->view('blog/index', [
-            'title' => 'Blog y Noticias - SoftHub',
-            'description' => 'Descubre los mejores tutoriales, noticias y guías sobre software en nuestro blog gratuito.',
+            'title' => $title,
+            'description' => $description,
             'categories' => $categories,
             'posts' => $posts,
             'featuredPost' => $featuredPost

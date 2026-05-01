@@ -116,6 +116,16 @@ ob_start();
                                    min="12" max="48" step="6"
                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
                         </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tema del Frontend</label>
+                            <select name="setting_default_theme" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 [&>option]:bg-gray-900 transition-all">
+                                <option value="system" <?= ($settings['default_theme']['setting_value'] ?? 'system') == 'system' ? 'selected' : '' ?>>Oculto automático (Sistema)</option>
+                                <option value="dark" <?= ($settings['default_theme']['setting_value'] ?? 'system') == 'dark' ? 'selected' : '' ?>>Modo Oscuro Siempre</option>
+                                <option value="light" <?= ($settings['default_theme']['setting_value'] ?? 'system') == 'light' ? 'selected' : '' ?>>Modo Claro Siempre</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-2">Fuerza a los usuarios a ver la página en este modo u obedece a su sistema Windows/Móvil.</p>
+                        </div>
                 </div>
 
                 <!-- Localización Settings -->
@@ -229,7 +239,7 @@ ob_start();
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10 mb-8">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Últimos Agregados</label>
                             <input type="number" name="setting_home_latest_count" 
@@ -247,6 +257,13 @@ ob_start();
                             <input type="number" name="setting_home_top_downloads" 
                                    value="<?= $settings['home_top_downloads']['setting_value'] ?? 10 ?>"
                                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500/50 transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Umbral Popular</label>
+                            <input type="number" name="setting_popular_threshold" 
+                                   value="<?= $settings['popular_threshold']['setting_value'] ?? 500 ?>"
+                                   class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                            <p class="text-[10px] text-gray-500 mt-1">Descargas mínimas para insignia Popular.</p>
                         </div>
                     </div>
 
@@ -443,7 +460,7 @@ ob_start();
                                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Archivo de Logo</label>
                                 <?php if (!empty($settings['site_logo']['setting_value'])): ?>
                                     <div class="flex items-center gap-3 mb-3 p-2 bg-white/5 rounded-lg">
-                                        <img src="<?= url($settings['site_logo']['setting_value']) ?>" class="h-8 object-contain">
+                                        <img src="<?= url($settings['site_logo']['setting_value']) ?>" class="w-auto object-contain transition-all" id="admin_logo_preview" style="height: <?= $settings['logo_height']['setting_value'] ?? 48 ?>px;">
                                         <label class="flex items-center gap-2 cursor-pointer ml-auto">
                                             <input type="checkbox" name="remove_logo" value="1" class="rounded bg-white/10 border-white/20 text-red-500 focus:ring-red-500">
                                             <span class="text-xs text-red-400">Eliminar</span>
@@ -516,6 +533,26 @@ ob_start();
                             </div>
                             <textarea name="setting_seo_description" id="seo_description" rows="3"
                                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 transition-all resize-none"><?= htmlspecialchars($settings['seo_description']['setting_value'] ?? '') ?></textarea>
+                        </div>
+
+                        <!-- Blog SEO Settings -->
+                        <div class="pt-6 border-t border-white/5">
+                            <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                                <i class="fas fa-blog text-green-400"></i> SEO Página del Blog
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-2">Meta Título Blog</label>
+                                    <input type="text" name="setting_seo_blog_title" 
+                                           value="<?= htmlspecialchars($settings['seo_blog_title']['setting_value'] ?? 'Blog - SoftHub') ?>"
+                                           class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-2">Meta Descripción Blog</label>
+                                    <textarea name="setting_seo_blog_description" rows="2"
+                                              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500/50 resize-none"><?= htmlspecialchars($settings['seo_blog_description']['setting_value'] ?? 'Lee las últimas noticias y tutoriales sobre software premium.') ?></textarea>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Advanced SEO Templates -->
@@ -606,6 +643,78 @@ ob_start();
                                        class="w-full bg-white/5 border border-white/10 rounded-r-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all text-sm">
                             </div>
                         </div>
+                    </div>
+                </div>
+
+
+                <!-- Telegram Settings -->
+                <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-[50px] -mr-10 -mt-10"></div>
+                    
+                    <h2 class="text-xl font-bold text-white font-outfit mb-6 flex items-center gap-2 relative z-10">
+                        <i class="fab fa-telegram text-blue-400"></i> Integración con Telegram
+                    </h2>
+
+                    <div class="space-y-6 relative z-10">
+                        <div class="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/5">
+                            <input type="checkbox" id="telegram_enabled" name="setting_telegram_enabled" value="1" 
+                                   <?= ($settings['telegram_enabled']['setting_value'] ?? '0') == '1' ? 'checked' : '' ?>
+                                   class="w-5 h-5 rounded border-gray-600 text-blue-500 focus:ring-blue-500 bg-gray-700">
+                            <label for="telegram_enabled" class="text-sm text-gray-300 cursor-pointer select-none">
+                                Habilitar botón de suscripción en programas
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Username del Bot (Sin @)</label>
+                                <input type="text" name="setting_telegram_bot_username" 
+                                       value="<?= htmlspecialchars($settings['telegram_bot_username']['setting_value'] ?? '') ?>"
+                                       placeholder="Ej: MySoftHubBot"
+                                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                                <p class="text-[10px] text-gray-500 mt-2">Para generar los enlaces t.me/tu_bot.</p>
+                            </div>
+
+                            <div>
+                                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Username del Canal (Con @)</label>
+                                <input type="text" name="setting_telegram_channel" 
+                                       value="<?= htmlspecialchars($settings['telegram_channel']['setting_value'] ?? '') ?>"
+                                       placeholder="Ej: @MiCanalWeb"
+                                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                                <p class="text-[10px] text-gray-500 mt-2">Para el botón "Unirse al Canal" y publicaciones automáticas.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Token del Bot (Para avisos)</label>
+                                <input type="password" name="setting_telegram_bot_token" 
+                                       value="<?= htmlspecialchars($settings['telegram_bot_token']['setting_value'] ?? '') ?>"
+                                       placeholder="123456789:ABCDefgh..."
+                                       class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                                <p class="text-[10px] text-gray-500 mt-2">Opcional. Se usará para enviar mensajes automáticos.</p>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <div class="bg-blue-500/5 p-4 rounded-xl border border-blue-500/20 flex items-center gap-4">
+                                    <button type="button" onclick="activateWebhook()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-2">
+                                        <i class="fas fa-satellite-dish"></i> ACTIVAR WEBHOOK
+                                    </button>
+                                    <p class="text-[10px] text-gray-400">Pulsa aquí después de Guardar el Token para activar las suscripciones individuales.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        function activateWebhook() {
+                            const token = document.querySelector('input[name="setting_telegram_bot_token"]').value;
+                            if (!token) { alert('Guarda primero el Token.'); return; }
+                            const url = window.location.origin + '/api/telegram-webhook';
+                            if (confirm('¿Activar Webhook en: ' + url + '?')) {
+                                fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${url}`)
+                                    .then(r => r.json())
+                                    .then(d => d.ok ? alert('✅ ¡Activado!') : alert('❌ Error: ' + d.description));
+                            }
+                        }
+                        </script>
                     </div>
                 </div>
 
@@ -761,6 +870,14 @@ function updateRangeVal(input, displayId) {
     const display = document.getElementById(displayId);
     let unit = displayId.includes('logo') ? 'px' : ' cols';
     display.textContent = input.value + unit;
+    
+    // Live preview for admin logo
+    if (displayId === 'logo_h_val') {
+        const preview = document.getElementById('admin_logo_preview');
+        if (preview) {
+            preview.style.height = input.value + 'px';
+        }
+    }
 }
 
 // Generate Site Info with IA

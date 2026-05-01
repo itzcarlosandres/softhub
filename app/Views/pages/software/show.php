@@ -1,9 +1,4 @@
 <?php
-// Debug Errors (TEMPORAL)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 // Obtener el software
 $slug = $params['slug'] ?? '';
 $db = \App\Database::getInstance()->getConnection();
@@ -61,6 +56,17 @@ $stmt = $db->prepare("SELECT * FROM software_versions WHERE software_id = ? ORDE
 $stmt->execute([$software['id']]);
 $versions = $stmt->fetchAll();
 
+// Obtener configuraciones de Telegram
+$stmt = $db->prepare("SELECT setting_value FROM site_settings WHERE setting_key = ?");
+$stmt->execute(['telegram_enabled']);
+$tgEnabled = ($stmt->fetch()['setting_value'] ?? '0') == '1';
+
+$stmt->execute(['telegram_bot_username']);
+$tgBotUser = $stmt->fetch()['setting_value'] ?? '';
+
+$stmt->execute(['telegram_channel']);
+$tgChannel = str_replace('@', '', ($stmt->fetch()['setting_value'] ?? ''));
+
 // Helper Icon Function (Closure)
 $get_icon_url = function($soft) {
     return !empty($soft['icon']) ? url($soft['icon']) : '';
@@ -82,72 +88,149 @@ ob_start();
             </nav>
 
             <div class="flex-1 flex flex-col justify-center">
-                 <div class="w-32 h-32 bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex items-center justify-center mb-10 ring-1 ring-black/5 dark:ring-white/5 mx-auto lg:mx-0 transition-transform hover:scale-105 duration-500 overflow-hidden">
-                    <?php if($get_icon_url($software)): ?>
-                        <img src="<?= $get_icon_url($software) ?>" class="w-full h-full object-cover">
-                    <?php else: ?>
-                        <i class="fas fa-cube text-5xl text-blue-600"></i>
-                    <?php endif; ?>
-                 </div>
-                  <h1 class="text-3xl lg:text-5xl font-black text-gray-900 dark:text-white mb-6 tracking-tighter leading-tight text-center lg:text-left transition-colors flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                    <span class="inline-block"><?= htmlspecialchars($software['name']) ?><span class="text-blue-600 dark:text-blue-400">.</span></span>
-                    
-                    <?php 
-                    $bName = !empty($software['badge_name']) ? $software['badge_name'] : ($software['custom_badge'] ?? '');
-                    $bColor = !empty($software['badge_color']) ? $software['badge_color'] : 'cyan';
-                    
-                    $colorClasses = [
-                        'cyan' => 'bg-cyan-500/10 dark:bg-cyan-400/10 border-cyan-500/20 text-cyan-600 dark:text-cyan-400',
-                        'blue' => 'bg-blue-500/10 dark:bg-blue-400/10 border-blue-500/20 text-blue-600 dark:text-blue-400',
-                        'purple' => 'bg-purple-500/10 dark:bg-purple-400/10 border-purple-500/20 text-purple-600 dark:text-purple-400',
-                        'pink' => 'bg-pink-500/10 dark:bg-pink-400/10 border-pink-500/20 text-pink-600 dark:text-pink-400',
-                        'orange' => 'bg-orange-500/10 dark:bg-orange-400/10 border-orange-500/20 text-orange-600 dark:text-orange-400',
-                        'emerald' => 'bg-emerald-500/10 dark:bg-emerald-400/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-                        'rose' => 'bg-rose-500/10 dark:bg-rose-400/10 border-rose-500/20 text-rose-600 dark:text-rose-400',
-                    ];
-                    $cls = $colorClasses[$bColor] ?? $colorClasses['cyan'];
-                    ?>
+                <div class="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8 mb-8 text-center lg:text-left">
+                    <div class="w-24 h-24 lg:w-32 lg:h-32 bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex items-center justify-center ring-1 ring-black/5 dark:ring-white/5 mx-auto lg:mx-0 transition-transform hover:scale-105 duration-500 overflow-hidden flex-shrink-0">
+                        <?php if($get_icon_url($software)): ?>
+                            <img src="<?= $get_icon_url($software) ?>" class="w-full h-full object-cover">
+                        <?php else: ?>
+                            <i class="fas fa-cube text-4xl lg:text-5xl text-blue-600"></i>
+                        <?php endif; ?>
+                    </div>
 
-                    <?php if (!empty($bName)): ?>
-                        <span class="inline-flex px-3 py-1 border text-xs lg:text-sm font-black rounded-xl uppercase tracking-widest align-middle flex-shrink-0 <?= $cls ?>">
-                            <?= htmlspecialchars($bName) ?>
-                        </span>
-                    <?php endif; ?>
-                  </h1>
+                    <div class="flex flex-col">
+                        <!-- Telegram Buttons Group -->
+                        <?php if ($tgEnabled): ?>
+                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-3">
+                             <!-- Subscribe Individual -->
+                             <?php if (!empty($tgBotUser)): ?>
+                             <a href="https://t.me/<?= $tgBotUser ?>?start=soft_<?= $software['id'] ?>" 
+                                target="_blank" 
+                                onclick="incrementTgSubs(<?= $software['id'] ?>)"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 rounded-full text-[10px] font-bold text-sky-600 dark:text-sky-400 transition-all group shadow-sm">
+                                 <i class="fab fa-telegram-plane group-hover:rotate-12 transition-transform"></i>
+                                 <span>AVISARME POR TELEGRAM</span>
+                                 <span class="bg-sky-500 text-white px-1.5 py-0.5 rounded-full text-[9px]" id="tg-subs-count"><?= number_format($software['telegram_subs'] ?? 0) ?></span>
+                             </a>
+                             <?php endif; ?>
 
-                 <?php if (!empty($software['badge_editors_choice'])): ?>
-                     <div class="flex justify-center lg:justify-start mb-6">
-                         <span class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-bold uppercase tracking-wider rounded-full shadow-lg shadow-purple-500/20">
-                             <i class="fas fa-award"></i> <?= __('editors_choice', "Editor's Choice") ?>
-                         </span>
-                     </div>
-                 <?php endif; ?>
+                             <!-- Join Channel -->
+                             <?php if (!empty($tgChannel)): ?>
+                             <a href="https://t.me/<?= $tgChannel ?>" 
+                                target="_blank" 
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 border border-sky-600/20 rounded-full text-[10px] font-bold text-white transition-all group shadow-md">
+                                 <i class="fas fa-users group-hover:scale-110 transition-transform"></i>
+                                 <span>UNIRSE AL CANAL</span>
+                             </a>
+                             <?php endif; ?>
+                        </div>
+
+                        <script>
+                        function incrementTgSubs(id) {
+                            const countSpan = document.getElementById('tg-subs-count');
+                            if (countSpan) {
+                                let currentStr = countSpan.innerText.replace(/,/g, '');
+                                let current = parseInt(currentStr) || 0;
+                                countSpan.innerText = (current + 1).toLocaleString();
+                            }
+                            fetch('<?= url('api/track-tg-sub') ?>', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                body: 'software_id=' + id
+                            });
+                        }
+                        </script>
+                        <?php endif; ?>
+
+                        <h1 class="text-2xl lg:text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter leading-tight transition-colors flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                            <span class="inline-block"><?= htmlspecialchars($software['name']) ?><span class="text-blue-600 dark:text-blue-400">.</span></span>
+                            
+                            <?php 
+                            $bName = !empty($software['badge_name']) ? $software['badge_name'] : ($software['custom_badge'] ?? '');
+                            $bColor = !empty($software['badge_color']) ? $software['badge_color'] : 'cyan';
+                            
+                            $colorClasses = [
+                                'cyan' => 'bg-cyan-500/10 dark:bg-cyan-400/10 border-cyan-500/20 text-cyan-600 dark:text-cyan-400',
+                                'blue' => 'bg-blue-500/10 dark:bg-blue-400/10 border-blue-500/20 text-blue-600 dark:text-blue-400',
+                                'purple' => 'bg-purple-500/10 dark:bg-purple-400/10 border-purple-500/20 text-purple-600 dark:text-purple-400',
+                                'pink' => 'bg-pink-500/10 dark:bg-pink-400/10 border-pink-500/20 text-pink-600 dark:text-pink-400',
+                                'orange' => 'bg-orange-500/10 dark:bg-orange-400/10 border-orange-500/20 text-orange-600 dark:text-orange-400',
+                                'emerald' => 'bg-emerald-500/10 dark:bg-emerald-400/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+                                'rose' => 'bg-rose-500/10 dark:bg-rose-400/10 border-rose-500/20 text-rose-600 dark:text-rose-400',
+                            ];
+                            $cls = $colorClasses[$bColor] ?? $colorClasses['cyan'];
+                            ?>
+
+                            <?php if (!empty($bName)): ?>
+                                <span class="inline-flex px-2 py-0.5 border text-[10px] lg:text-xs font-black rounded-lg uppercase tracking-widest align-middle flex-shrink-0 <?= $cls ?>">
+                                    <?= htmlspecialchars($bName) ?>
+                                </span>
+                            <?php endif; ?>
+                        </h1>
+
+                        <?php if (!empty($software['badge_editors_choice'])): ?>
+                            <div class="flex justify-center lg:justify-start mb-3">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg shadow-purple-500/20">
+                                    <i class="fas fa-award"></i> <?= __('editors_choice', "Editor's Choice") ?>
+                                </span>
+                            </div>
+                        <?php endif; ?>
+
+                        <p class="text-base lg:text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed max-w-xl transition-colors">
+                            <?= htmlspecialchars($software['short_description']) ?>
+                        </p>
+                    </div>
+                </div>
                  
-                 <p class="text-xl lg:text-3xl text-gray-500 dark:text-gray-400 font-light leading-snug mb-12 text-center lg:text-left transition-colors">
-                     <?= htmlspecialchars($software['short_description']) ?>
-                 </p>
-                 
-                 <div class="flex flex-row gap-3 w-full max-w-md mx-auto mt-4">
-                     <a href="<?= url('download/' . $software['id']) ?>" class="flex-1 flex justify-center items-center bg-black dark:bg-blue-600 text-white py-3.5 px-2 rounded-xl font-bold text-sm sm:text-base hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-lg shadow-gray-200 dark:shadow-none transform hover:-translate-y-1">
-                         <i class="fas fa-download mr-1.5 sm:mr-2"></i> <span class="truncate"><?= __('download', 'Descargar') ?></span>
-                     </a>
-                     
-                     <?php if (!empty($software['price']) && $software['price'] > 0): ?>
-                     <a href="<?= !empty($software['buy_url']) ? htmlspecialchars($software['buy_url']) : '#' ?>" target="_blank" class="flex-1 flex justify-center items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white py-3.5 px-2 rounded-xl font-bold text-sm sm:text-base hover:from-yellow-300 hover:to-amber-400 transition-all duration-300 border border-yellow-300/50 relative group overflow-hidden drop-shadow-md" style="animation: pulse-glow 2.5s infinite ease-in-out;">
-                         <style>
-                             @keyframes pulse-glow {
-                                 0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); transform: scale(1); }
-                                 50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.7); transform: scale(1.02); }
-                             }
-                         </style>
-                         <div class="flex items-center justify-center relative z-10 transition-transform group-hover:scale-105 w-full">
-                             <i class="fas fa-crown relative -top-[1px] group-hover:animate-bounce mr-1.5"></i>
-                             <span class="truncate"><?= __('premium', 'Prémium') ?></span>
-                             <span class="bg-black/20 text-white px-1.5 py-0.5 rounded shadow-inner text-[10px] sm:text-xs ml-1.5 border border-white/20 font-bold">$<?= number_format($software['price'], 2) ?></span>
-                         </div>
-                     </a>
-                     <?php endif; ?>
-                 </div>
+                  <div class="flex flex-row gap-3 w-full max-w-md mx-auto mt-4">
+                      <a href="<?= url('download/' . $software['id']) ?>" class="flex-1 flex justify-center items-center bg-black dark:bg-blue-600 text-white py-3.5 px-2 rounded-xl font-bold text-sm sm:text-base hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-lg shadow-gray-200 dark:shadow-none transform hover:-translate-y-1">
+                          <i class="fas fa-download mr-1.5 sm:mr-2"></i> <span class="truncate"><?= __('download', 'Descargar') ?></span>
+                      </a>
+                      
+                      <?php if (!empty($software['price']) && $software['price'] > 0): ?>
+                      <a href="<?= !empty($software['buy_url']) ? htmlspecialchars($software['buy_url']) : '#' ?>" target="_blank" class="flex-1 flex justify-center items-center bg-gradient-to-r from-yellow-400 to-amber-500 text-white py-3.5 px-2 rounded-xl font-bold text-sm sm:text-base hover:from-yellow-300 hover:to-amber-400 transition-all duration-300 border border-yellow-300/50 relative group overflow-hidden drop-shadow-md" style="animation: pulse-glow 2.5s infinite ease-in-out;">
+                          <style>
+                              @keyframes pulse-glow {
+                                  0%, 100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); transform: scale(1); }
+                                  50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.7); transform: scale(1.02); }
+                              }
+                          </style>
+                          <div class="flex items-center justify-center relative z-10 transition-transform group-hover:scale-105 w-full">
+                              <i class="fas fa-crown relative -top-[1px] group-hover:animate-bounce mr-1.5"></i>
+                              <span class="truncate"><?= __('premium', 'Prémium') ?></span>
+                              <span class="bg-black/20 text-white px-1.5 py-0.5 rounded shadow-inner text-[10px] sm:text-xs ml-1.5 border border-white/20 font-bold">$<?= number_format($software['price'], 2) ?></span>
+                          </div>
+                      </a>
+                      <?php endif; ?>
+                  </div>
+
+                  <!-- PLATAFORMAS DISPONIBLES (NUEVO) -->
+                  <?php if (!empty($downloadLinks)): ?>
+                  <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+                      <p class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 text-center lg:text-left transition-colors">
+                          PLATAFORMAS DISPONIBLES
+                      </p>
+                      <div class="flex flex-wrap justify-center lg:justify-start gap-2">
+                          <?php 
+                          $uniquePlatforms = [];
+                          foreach($downloadLinks as $link) {
+                              $plt = $link['platform'];
+                              if (!isset($uniquePlatforms[$plt])) {
+                                  $uniquePlatforms[$plt] = true;
+                                  $icon = match($plt) {
+                                      'Windows' => 'fab fa-windows',
+                                      'Android' => 'fab fa-android',
+                                      'Torrent' => 'fas fa-magnet',
+                                      default => 'fas fa-link'
+                                  };
+                                  echo '<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg text-xs font-bold text-gray-600 dark:text-gray-300 shadow-sm transition-colors cursor-default">';
+                                  echo '<i class="'.$icon.'"></i> '.$plt;
+                                  echo '</span>';
+                              }
+                          }
+                          ?>
+                      </div>
+                  </div>
+                  <?php endif; ?>
             </div>
             
             <!-- Metadata Footer Left -->
@@ -235,7 +318,11 @@ ob_start();
                     <div>
                         <dt class="text-gray-400 text-xs uppercase font-bold mb-2 tracking-widest"><?= __('platform', 'Plataforma') ?></dt>
                         <dd class="text-xl font-bold flex items-center gap-2 text-white">
-                            <i class="fab fa-windows"></i> Windows
+                            <?php 
+                            $os = $software['operating_system'] ?? 'Windows';
+                            $osIcon = (stripos($os, 'Android') !== false || stripos($software['name'], 'APK') !== false) ? 'fab fa-android' : 'fab fa-windows';
+                            ?>
+                            <i class="<?= $osIcon ?>"></i> <?= htmlspecialchars($os) ?>
                         </dd>
                     </div>
                     <div class="sm:col-span-2 border-t border-white/10 pt-6 mt-2">

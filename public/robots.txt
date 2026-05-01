@@ -1,23 +1,14 @@
-# robots.txt para SoftHub
 User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
 Disallow: /private/
+Disallow: /lang/
 
-# Sitemap
-Sitemap: /sitemap.xml
-
-# Crawl-delay para bots específicos
 User-agent: Googlebot
-Crawl-delay: 0
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
 
-User-agent: Bingbot
-Crawl-delay: 1
-
-# Bloquear bots malos
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
+Sitemap: https://ddlwarez.cc/sitemap.xml

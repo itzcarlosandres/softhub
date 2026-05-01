@@ -229,4 +229,75 @@ class ApiController
             return $this->error($e->getMessage(), 500);
         }
     }
+    /**
+     * Increment Telegram subscription counter
+     */
+    public function trackTgSub()
+    {
+        try {
+            $softwareId = (int)($_POST['software_id'] ?? 0);
+            if ($softwareId > 0) {
+                $stmt = $this->db->prepare("UPDATE software SET telegram_subs = telegram_subs + 1 WHERE id = ?");
+                $stmt->execute([$softwareId]);
+                return $this->success([], 'Subscription tracked');
+            }
+            return $this->error('Invalid software ID');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Webhook para recibir actualizaciones del Bot de Telegram
+     */
+    public function telegramWebhook()
+    {
+        $input = file_get_contents('php://input');
+        $update = json_decode($input, true);
+
+        if (!$update || !isset($update['message'])) {
+            return;
+        }
+
+        $chatId = $update['message']['chat']['id'];
+        $text = $update['message']['text'] ?? '';
+
+        if (strpos($text, '/start soft_') === 0) {
+            $softwareId = (int)str_replace('/start soft_', '', $text);
+            
+            if ($softwareId > 0) {
+                try {
+                    $db = \App\Database::getInstance()->getConnection();
+                    $stmt = $db->prepare("INSERT IGNORE INTO software_subscriptions (software_id, chat_id) VALUES (?, ?)");
+                    $stmt->execute([$softwareId, $chatId]);
+
+                    $stmt = $db->prepare("SELECT name FROM software WHERE id = ?");
+                    $stmt->execute([$softwareId]);
+                    $name = $stmt->fetchColumn();
+
+                    $this->sendTgReply($chatId, "✅ *¡Suscripción confirmada!*\n\nTe avisaré por aquí en cuanto *{$name}* reciba una nueva actualización. 🚀");
+                    
+                } catch (\Exception $e) {
+                    error_log("Error Webhook TG: " . $e->getMessage());
+                }
+            }
+        }
+    }
+
+    private function sendTgReply($chatId, $text)
+    {
+        $settings = new \App\Models\SiteSetting();
+        $token = $settings->get('telegram_bot_token');
+        if (!$token) return;
+
+        $url = "https://api.telegram.org/bot{$token}/sendMessage";
+        $data = ['chat_id' => $chatId, 'text' => $text, 'parse_mode' => 'Markdown'];
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        curl_close($ch);
+    }
 }

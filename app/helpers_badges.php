@@ -105,4 +105,3 @@ if (!function_exists('auto_assign_badges')) {
         return true;
     }
 }
-?>

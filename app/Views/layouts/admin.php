@@ -142,6 +142,11 @@
                     <span>Software</span>
                 </a>
 
+                <a href="<?= url('admin/import') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'import' ? 'bg-blue-600/20 text-blue-400 font-medium border border-blue-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
+                    <i class="fas fa-magic w-5 text-center <?= $cp == 'import' ? 'text-blue-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
+                    <span>Importador Pro</span>
+                </a>
+
                 <a href="<?= url('manage_versions.php') ?>" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group <?= $cp == 'versions' ? 'bg-indigo-600/20 text-indigo-400 font-medium border border-indigo-500/20' : 'text-gray-400 hover:bg-white/5 hover:text-white' ?>">
                     <i class="fas fa-code-branch w-5 text-center <?= $cp == 'versions' ? 'text-indigo-400' : 'text-gray-500 group-hover:text-white' ?>"></i>
                     <span>Versiones</span>

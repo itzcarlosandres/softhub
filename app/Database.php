@@ -21,13 +21,15 @@ class Database
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
+            
+            // 🔥 SOLUCIÓN CRÍTICA: Desactivar Strict Mode en producción temporal/permanentemente
+            // para que coincida exactamente con cómo funciona tu Localhost (MAMP) y MySQL le auto-asigne string vacío
+            // a campos antiguos olvidados que no tienen valor por defecto establecido.
+            $this->connection->exec("SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION'");
+
         } catch (PDOException $e) {
             error_log("Database Connection Error: " . $e->getMessage());
-            if (env('APP_DEBUG', false)) {
-                die("Error de conexión: " . $e->getMessage());
-            } else {
-                die("Error interno del servidor. Por favor, intente más tarde.");
-            }
+            throw $e;
         }
     }
 

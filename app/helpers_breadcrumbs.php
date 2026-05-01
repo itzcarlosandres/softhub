@@ -39,4 +39,3 @@ if (!function_exists('breadcrumbs')) {
         return $html;
     }
 }
-?>

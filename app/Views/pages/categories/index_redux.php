@@ -7,28 +7,8 @@ error_reporting(E_ALL);
 $style = $_GET['style'] ?? 'premium'; 
 
 // Icon Mapping Helper
-function get_category_icon($slug) {
-    $icons = [
-        'antivirus' => 'fa-shield-alt',
-        'navegadores' => 'fa-globe',
-        'multimedia' => 'fa-play-circle',
-        'utilidades' => 'fa-cog',
-        'productividad' => 'fa-briefcase',
-        'juegos' => 'fa-gamepad',
-        'desarrollo' => 'fa-code',
-        'educacion' => 'fa-graduation-cap',
-        'comunicacion' => 'fa-comments',
-        'diseno' => 'fa-palette',
-        'seguridad' => 'fa-lock',
-        'sistema' => 'fa-desktop'
-    ];
-    $slug = strtolower($slug);
-    // Buscar coincidencia parcial si no exacta
-    foreach($icons as $key => $val) {
-        if(strpos($slug, $key) !== false) return $val;
-    }
-    return 'fa-folder'; // Default
-}
+// Usamos el helper global get_category_icon($cat)
+
 
 // Color Mapping Helper
 function get_category_color($index) {
@@ -65,7 +45,7 @@ ob_start();
                 <?php foreach ($categories as $index => $cat): ?>
                     <a href="<?= url('category/' . ($cat['slug'] ?? '#')) ?>" class="group bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200 hover:-translate-y-1">
                         <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            <i class="fas <?= get_category_icon($cat['slug']) ?>"></i>
+                            <i class="<?= get_category_icon($cat) ?>"></i>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors"><?= $cat['name'] ?></h3>
                         <p class="text-gray-500 text-sm mb-6 line-clamp-2"><?= $cat['description'] ?? 'Descubre los mejores programas de esta categoría.' ?></p>
@@ -98,7 +78,7 @@ ob_start();
                 <?php foreach ($categories as $index => $cat): ?>
                     <a href="<?= url('category/' . ($cat['slug'] ?? '#')) ?>" class="flex items-center p-6 rounded-2xl border border-gray-100 hover:border-indigo-500 hover:shadow-md transition-all group bg-white">
                         <div class="w-14 h-14 bg-gray-50 text-gray-600 rounded-xl flex items-center justify-center text-xl mr-6 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                            <i class="fas <?= get_category_icon($cat['slug']) ?>"></i>
+                            <i class="<?= get_category_icon($cat) ?>"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="text-lg font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors"><?= $cat['name'] ?></h3>
@@ -140,7 +120,7 @@ ob_start();
                                 $colors = ['text-blue-500', 'text-purple-500', 'text-pink-500', 'text-indigo-500'];
                                 $colorClass = $colors[$index % count($colors)];
                                 ?>
-                                <i class="fas <?= get_category_icon($cat['slug']) ?> <?= $colorClass ?>"></i>
+                                <i class="<?= get_category_icon($cat) ?> <?= $colorClass ?>"></i>
                             </div>
                             <span class="bg-white/50 px-3 py-1 rounded-full text-xs font-bold text-gray-500 border border-white/50">
                                 <?= $cat['software_count'] ?? 0 ?>
@@ -221,7 +201,7 @@ ob_start();
                         <div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
                         
                         <div class="relative z-10 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                            <i class="fas <?= get_category_icon($cat['slug']) ?> text-xl"></i>
+                            <i class="<?= get_category_icon($cat) ?> text-xl"></i>
                         </div>
                         
                         <div class="relative z-10">

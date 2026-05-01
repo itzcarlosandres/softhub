@@ -8,6 +8,11 @@ if (!function_exists('url')) {
         $appUrl = env('APP_URL', '');
         
         if ($appUrl) {
+            // Si ya es una URL absoluta, la devolvemos tal cual
+            if (preg_match('/^https?:\/\//', $path)) {
+                return $path;
+            }
+
             $baseUrl = rtrim($appUrl, '/');
             $cleanPath = ltrim($path, '/');
             
@@ -19,6 +24,11 @@ if (!function_exists('url')) {
             return $baseUrl . ($cleanPath ? '/' . $cleanPath : '');
         }
         
+        // Si ya es una URL absoluta, la devolvemos tal cual (fallback)
+        if (preg_match('/^https?:\/\//', $path)) {
+            return $path;
+        }
+
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         return $protocol . $host . ($path ? '/' . ltrim($path, '/') : '');
@@ -158,5 +168,92 @@ if (!function_exists('decrypt_id')) {
     function decrypt_id($hash) {
         $decoded = base64_decode(str_replace(['-', '_'], ['+', '/'], $hash));
         return is_numeric($decoded) ? intval($decoded) : null;
+    }
+}
+
+/**
+ * Obtener el icono de una categoría (prioriza DB, fallback a mapeo por slug)
+ */
+if (!function_exists('get_category_icon')) {
+    function get_category_icon($category) {
+        if (empty($category)) return 'fas fa-folder';
+        
+        // Si se pasa solo el slug por compatibilidad (legacy)
+        if (is_string($category)) {
+            $category = ['slug' => $category];
+        }
+
+        // Si ya tiene un icono definido en la base de datos, lo usamos
+        if (!empty($category['icon'])) {
+            $icon = $category['icon'];
+            // Asegurar prefijo FontAwesome si no lo tiene y no empieza por 'fa-'
+            if (!preg_match('/^(fas|far|fab|fal|fad|fat|fa-)/', $icon) && !preg_match('/^fa-/', $icon)) {
+                $icon = 'fas ' . $icon;
+            }
+            // Si empieza por fa- pero no tiene el prefijo de peso (como 'fas')
+            if (preg_match('/^fa-/', $icon) && !preg_match('/^(fas|far|fab|fal|fad|fat)\s/', $icon)) {
+                $icon = 'fas ' . $icon;
+            }
+            return $icon;
+        }
+
+        // Mapeo legacy por slug como fallback
+        $slug = $category['slug'] ?? '';
+        $icons = [
+            'antivirus' => 'fa-shield-alt',
+            'navegadores' => 'fa-globe',
+            'multimedia' => 'fa-play-circle',
+            'utilidades' => 'fa-cog',
+            'productividad' => 'fa-briefcase',
+            'juegos' => 'fa-gamepad',
+            'desarrollo' => 'fa-code',
+            'educacion' => 'fa-graduation-cap',
+            'comunicacion' => 'fa-comments',
+            'diseno' => 'fa-palette',
+            'seguridad' => 'fa-lock',
+            'sistema' => 'fa-desktop'
+        ];
+        
+        $slug = strtolower($slug);
+        foreach($icons as $key => $val) {
+            if(strpos($slug, $key) !== false) return 'fas ' . $val;
+        }
+        
+        return 'fas fa-folder';
+    }
+}
+
+if (!function_exists('time_elapsed_string')) {
+    function time_elapsed_string($datetime, $full = false) {
+        $now = new DateTime;
+        $ago = new DateTime($datetime);
+        $diff = $now->diff($ago);
+
+        // Calcular semanas sin usar propiedad dinámica en DateInterval (Deprecado en PHP 8.2+)
+        $weeks = floor($diff->d / 7);
+        $days = $diff->d - ($weeks * 7);
+
+        $string = array(
+            'y' => 'año',
+            'm' => 'mes',
+            'w' => 'semana',
+            'd' => 'día',
+            'h' => 'hora',
+            'i' => 'minuto',
+            's' => 'segundo',
+        );
+
+        foreach ($string as $k => &$v) {
+            $value = ($k == 'w') ? $weeks : (($k == 'd') ? $days : $diff->$k);
+            
+            if ($value) {
+                $v = $value . ' ' . $v . ($value > 1 ? ($k == 'm' ? 'es' : 's') : '');
+            } else {
+                unset($string[$k]);
+            }
+        }
+
+        if (!$full) $string = array_slice($string, 0, 1);
+        return $string ? 'Hace ' . implode(', ', $string) : 'Justo ahora';
     }
 }

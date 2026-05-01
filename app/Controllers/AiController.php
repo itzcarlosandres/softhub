@@ -20,19 +20,19 @@ class AiController extends Controller
             return;
         }
         
-        // Obtener datos del POST
-        $input = json_decode(file_get_contents('php://input'), true);
+        // Obtener datos (compatibilidad con JSON y FormData)
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         
-        $softwareName = $input['name'] ?? '';
+        $softwareName = $input['name'] ?? $input['title'] ?? '';
         $category = $input['category'] ?? '';
         $developer = $input['developer'] ?? '';
-        $type = $input['type'] ?? 'both'; // 'short', 'full', o 'both'
+        $type = $input['type'] ?? 'both'; // 'short', 'full', 'both', 'blog_seo'
         
         if (empty($softwareName)) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
-                'error' => 'El nombre del software es requerido'
+                'error' => 'El nombre es requerido'
             ]);
             return;
         }
@@ -40,6 +40,24 @@ class AiController extends Controller
         try {
             $gemini = new GeminiService();
             
+            if ($type === 'blog_seo') {
+                $result = $gemini->generateBlogSEO($softwareName, $category);
+                
+                if (!$result['short']['success'] || !$result['full']['success']) {
+                    $error = !$result['short']['success'] ? $result['short']['error'] : $result['full']['error'];
+                    http_response_code(500);
+                    echo json_encode(['success' => false, 'error' => $error]);
+                    return;
+                }
+                
+                echo json_encode([
+                    'success' => true,
+                    'short' => $result['short']['text'],
+                    'full' => $result['full']['text']
+                ]);
+                return;
+            }
+
             if ($type === 'both') {
                 $result = $gemini->generateBothDescriptions($softwareName, $category, $developer);
                 
@@ -102,7 +120,6 @@ class AiController extends Controller
                     'description' => $result['text']
                 ]);
             }
-            
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode([

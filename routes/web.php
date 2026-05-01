@@ -6,12 +6,14 @@ $router = new Router();
 
 // Public Routes
 $router->get('/', 'HomeController@index');
+$router->get('/home-demo', 'HomeController@homeDemo');
 $router->get('/about', 'PageController@about');
 $router->get('/terms', 'PageController@terms');
 $router->get('/privacy', 'PageController@privacy');
 $router->get('/cookies', 'PageController@cookies');
 $router->get('/dmca', 'PageController@dmca');
 $router->get('/contact', 'PageController@contact');
+
 // Software Routes
 $router->get('/software', 'SoftwareController@index');
 $router->get('/software/:slug', 'SoftwareController@show');
@@ -120,5 +122,17 @@ $router->post('/api/generate-description', 'ApiController@generateDescription');
 $router->post('/api/ai/generate-descriptions', 'AiController@generateDescriptions');
 $router->post('/api/ai/test-connection', 'AiController@testConnection');
 $router->post('/api/ai/generate-blog-post', 'AiController@generateBlogPost');
+$router->post('/api/track-tg-sub', 'ApiController@trackTgSub');
+$router->post('/api/telegram-webhook', 'ApiController@telegramWebhook');
+
+// Admin Routes - Advanced Importer
+$router->get('/admin/import', 'ImportController@index');
+$router->get('/admin/import/search', 'ImportController@search');
+$router->get('/admin/import/discover', 'ImportController@discover');
+$router->get('/admin/import/details', 'ImportController@getDetails');
+$router->post('/admin/import/generate-ai', 'ImportController@generateAi');
+$router->post('/admin/import/store', 'ImportController@store');
+
+$router->get('/demo/updates', 'HomeController@demoUpdates');
 
 return $router;

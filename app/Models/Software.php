@@ -31,6 +31,7 @@ class Software extends Model
         'badge_id',
         'price',
         'buy_url',
+        'telegram_subs',
         'updated_at'
     ];
 
@@ -69,7 +70,7 @@ class Software extends Model
                 LEFT JOIN licenses l ON s.license = l.slug 
                 LEFT JOIN badges b ON s.badge_id = b.id
                 WHERE s.featured = 1 AND s.status = 'approved' 
-                ORDER BY s.updated_at DESC 
+                ORDER BY s.created_at DESC 
                 LIMIT ?";
         return $this->db->fetchAll($sql, [$limit]);
     }
@@ -82,7 +83,7 @@ class Software extends Model
                 LEFT JOIN licenses l ON s.license = l.slug 
                 LEFT JOIN badges b ON s.badge_id = b.id
                 WHERE s.status = 'approved' 
-                ORDER BY s.updated_at DESC 
+                ORDER BY s.created_at DESC 
                 LIMIT ?";
         return $this->db->fetchAll($sql, [$limit]);
     }
@@ -99,6 +100,19 @@ class Software extends Model
         return $this->db->fetchAll($sql, [$limit]);
     }
 
+    public function getRecentlyUpdated($limit = 8)
+    {
+        $sql = "SELECT s.*, c.name as category_name, l.name as license_name, b.name as badge_name, b.color as badge_color 
+                FROM {$this->table} s 
+                LEFT JOIN categories c ON s.category_id = c.id 
+                LEFT JOIN licenses l ON s.license = l.slug 
+                LEFT JOIN badges b ON s.badge_id = b.id
+                WHERE s.status = 'approved' 
+                ORDER BY s.updated_at DESC 
+                LIMIT ?";
+        return $this->db->fetchAll($sql, [$limit]);
+    }
+
     public function getByCategory($categoryId, $page = 1, $perPage = 12)
     {
         $offset = ($page - 1) * $perPage;
@@ -107,7 +121,7 @@ class Software extends Model
                 LEFT JOIN categories c ON s.category_id = c.id 
                 LEFT JOIN licenses l ON s.license = l.slug 
                 WHERE s.category_id = ? AND s.status = 'approved' 
-                ORDER BY s.updated_at DESC 
+                ORDER BY s.created_at DESC 
                 LIMIT ? OFFSET ?";
         return $this->db->fetchAll($sql, [$categoryId, $perPage, $offset]);
     }
@@ -135,7 +149,7 @@ class Software extends Model
                 LEFT JOIN categories c ON s.category_id = c.id 
                 LEFT JOIN licenses l ON s.license = l.slug 
                 WHERE s.status = 'approved' 
-                ORDER BY s.updated_at DESC 
+                ORDER BY s.created_at DESC 
                 LIMIT ? OFFSET ?";
         return $this->db->fetchAll($sql, [$perPage, $offset]);
     }

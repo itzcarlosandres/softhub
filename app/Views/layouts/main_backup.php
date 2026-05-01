@@ -515,8 +515,8 @@
         },
         "aggregateRating": {
             "@type": "AggregateRating",
-            "ratingValue": "<?= $software['rating'] ?? 4.5 ?>",
-            "ratingCount": "<?= $software['rating_count'] ?? 0 ?>",
+            "ratingValue": "<?= max(1, min(5, floatval($software['rating'] ?? 5))) ?>",
+            "ratingCount": "<?= max(1, intval($software['rating_count'] ?? 1)) ?>",
             "bestRating": "5",
             "worstRating": "1"
         },

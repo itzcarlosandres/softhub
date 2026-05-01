@@ -79,12 +79,18 @@ class SoftwareController extends Controller
         $categoryModel = new \App\Models\Category();
         $categories = $categoryModel->withSoftwareCount();
 
+        // Obtener IDs de tendencias
+        $stmtTrending = $db->query("SELECT id FROM software WHERE status = 'approved' AND trending = 1");
+        $trendingIds = array_column($stmtTrending->fetchAll(\PDO::FETCH_ASSOC), 'id');
+
         return $this->view('pages/software/index', [
             'title' => 'Todos los Programas',
             'software' => $software,
             'categories' => $categories,
             'currentPage' => $page,
-            'totalPages' => $totalPages
+            'totalPages' => $totalPages,
+            'trendingIds' => $trendingIds,
+            'popularThreshold' => (int)(new \App\Models\SiteSetting())->get('popular_threshold', 500)
         ]);
     }
 
@@ -180,7 +186,10 @@ class SoftwareController extends Controller
 
         return $this->view('pages/software/show', [
             'title' => $software['name'] . ' - Descargar Gratis',
-            'software' => $software
+            'description' => $software['short_description'],
+            'image' => !empty($software['image']) ? url($software['image']) : url($software['icon']),
+            'software' => $software,
+            'popularThreshold' => (int)(new \App\Models\SiteSetting())->get('popular_threshold', 500)
         ]);
     }
 

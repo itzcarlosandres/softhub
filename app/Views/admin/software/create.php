@@ -4,7 +4,6 @@ $pageTitle = 'Agregar Nuevo Software';
 $pageDescription = 'Completa el formulario para agregar un nuevo programa';
 
 $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
-$licensesList = $db->query("SELECT * FROM licenses ORDER BY name")->fetchAll();
 
 // Verificar si la IA está habilitada
 $stmt = $db->query("SELECT setting_value FROM site_settings WHERE setting_key = 'ai_enabled'");
@@ -166,16 +165,6 @@ ob_start();
             </h3>
             
             <div class="space-y-6 relative z-10">
-                 <!-- Tipo de Licencia -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tipo de Licencia <span class="text-pink-500">*</span></label>
-                    <select name="license" id="license_id" required
-                            class="w-full md:w-1/3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 transition-all [&>option]:bg-gray-900">
-                        <?php foreach ($licensesList as $licOption): ?>
-                            <option value="<?= htmlspecialchars($licOption['slug']) ?>"><?= htmlspecialchars($licOption['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
                 
                 <!-- Sistemas Operativos -->
                 <div>
@@ -199,12 +188,6 @@ ob_start();
                     </div>
                 </div>
                 
-                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Requisitos del Sistema</label>
-                    <textarea name="requirements" rows="3"
-                              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-500/50 transition-all placeholder-gray-600 resize-none"
-                              placeholder="Ej: Windows 10 o superior, 4GB RAM..."></textarea>
-                </div>
             </div>
         </div>
         
@@ -567,13 +550,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Inicializar Tom Select para Licencias
-    if (document.getElementById('license_id')) {
-        new TomSelect("#license_id",{
-            create: false,
-            placeholder: "Buscar licencia...",
-        });
-    }
 
     if (typeof tinymce !== 'undefined') {
         tinymce.init({
@@ -586,6 +562,26 @@ document.addEventListener('DOMContentLoaded', function() {
             toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | help',
             content_style: 'body { font-family:Inter,sans-serif; font-size:14px; background-color: #0f172a; color: #cbd5e1; }'
         });
+    }
+
+    // Fill other fields from URL params
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('name')) document.querySelector('input[name="name"]').value = params.get('name');
+    if (params.has('developer')) document.querySelector('input[name="developer"]').value = params.get('developer');
+    if (params.has('icon_url')) document.getElementById('icon_url_input').value = params.get('icon_url');
+    if (params.has('image_url')) document.getElementById('image_url_input').value = params.get('image_url');
+    
+    // Select category if name matches
+    if (params.has('category_name')) {
+        const catName = params.get('category_name').toLowerCase();
+        const select = document.getElementById('category_id');
+        for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].text.toLowerCase().includes(catName)) {
+                select.selectedIndex = i;
+                if (select.tomselect) select.tomselect.setValue(select.options[i].value);
+                break;
+            }
+        }
     }
 });
 </script>

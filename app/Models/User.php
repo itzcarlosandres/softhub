@@ -5,7 +5,7 @@ namespace App\Models;
 class User extends Model
 {
     protected $table = 'users';
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = ['username', 'email', 'password', 'role'];
 
     public function findByEmail($email)
     {

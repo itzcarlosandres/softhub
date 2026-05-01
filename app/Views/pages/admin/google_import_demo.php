@@ -214,3 +214,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['url'])) {
     </div>
 </body>
 </html>
+                                <i class="fas fa-plus-circle"></i> Abrir en Creador de Software
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -66,6 +66,15 @@ class AdminController extends Controller
                 $db->exec("ALTER TABLE software ADD COLUMN views INT DEFAULT 0 AFTER downloads");
             }
 
+            // Check updated_at column
+            try {
+                $db->query("SELECT updated_at FROM software LIMIT 1");
+            } catch (\Exception $e) {
+                $db->exec("ALTER TABLE software ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+                // Inicializar con created_at para registros existentes
+                $db->exec("UPDATE software SET updated_at = created_at WHERE updated_at IS NULL OR updated_at = '0000-00-00 00:00:00'");
+            }
+
             // Create reports table
             try {
                 $db->query("SELECT 1 FROM reports LIMIT 1");
@@ -78,6 +87,15 @@ class AdminController extends Controller
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (software_id) REFERENCES software(id) ON DELETE CASCADE
                 )");
+            }
+
+            // Check blog_posts SEO columns
+            try {
+                $db->query("SELECT seo_title FROM blog_posts LIMIT 1");
+            } catch (\Exception $e) {
+                try {
+                    $db->exec("ALTER TABLE blog_posts ADD COLUMN seo_title VARCHAR(255) DEFAULT NULL, ADD COLUMN seo_description TEXT DEFAULT NULL");
+                } catch (\Exception $ex) {}
             }
         } catch (\Exception $e) {}
     }
@@ -152,7 +170,7 @@ class AdminController extends Controller
 
         if ($user && $this->userModel->verifyPassword($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
+            $_SESSION['user_name'] = $user['username'];
             $_SESSION['role'] = $user['role'];
             
             $this->redirect('/admin');
@@ -247,14 +265,18 @@ class AdminController extends Controller
             'rating' => 0
         ];
 
-        // Handle image upload
+        // Handle image upload or remote URL
         if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
             $data['image'] = $this->uploadFile($_FILES['image'], 'images');
+        } elseif (!empty($_POST['image_url'])) {
+            $data['image'] = $this->downloadRemoteFile($_POST['image_url'], 'images');
         }
 
-        // Handle icon upload
+        // Handle icon upload or remote URL
         if (isset($_FILES['icon']) && $_FILES['icon']['error'] === 0) {
             $data['icon'] = $this->uploadFile($_FILES['icon'], 'icons');
+        } elseif (!empty($_POST['icon_url'])) {
+            $data['icon'] = $this->downloadRemoteFile($_POST['icon_url'], 'icons');
         }
 
         $softwareId = $this->softwareModel->create($data);
@@ -324,6 +346,10 @@ class AdminController extends Controller
             }
         }
 
+
+        // --- TELEGRAM AUTO ---
+        $this->notifyTelegram($softwareId);
+        
         $_SESSION['success'] = 'Software agregado exitosamente';
         $this->redirect('/admin/software');
     }
@@ -396,14 +422,18 @@ class AdminController extends Controller
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
-        // Handle image upload
+        // Handle image upload or remote URL
         if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
             $data['image'] = $this->uploadFile($_FILES['image'], 'images');
+        } elseif (!empty($_POST['image_url'])) {
+            $data['image'] = $this->downloadRemoteFile($_POST['image_url'], 'images');
         }
 
-        // Handle icon upload
+        // Handle icon upload or remote URL
         if (isset($_FILES['icon']) && $_FILES['icon']['error'] === 0) {
             $data['icon'] = $this->uploadFile($_FILES['icon'], 'icons');
+        } elseif (!empty($_POST['icon_url'])) {
+            $data['icon'] = $this->downloadRemoteFile($_POST['icon_url'], 'icons');
         }
 
         // DEBUG: Guardar datos en log
@@ -414,15 +444,11 @@ class AdminController extends Controller
         }
         file_put_contents($logFile, date('Y-m-d H:i:s') . " - UPDATE ID: $id\n" . print_r($data, true) . "\n\n", FILE_APPEND);
 
-        // Ejecutar update y verificar resultado
-        $result = $this->softwareModel->update($id, $data);
+        // Ejecutar actualización
+        $this->softwareModel->update($id, $data);
         
-        // DEBUG: Verificar resultado del update
-        file_put_contents($logFile, "UPDATE RESULT: " . ($result ? 'SUCCESS' : 'FAILED') . "\n", FILE_APPEND);
-        
-        // DEBUG: Verificar datos después del update
-        $updated = $this->softwareModel->find($id);
-        file_put_contents($logFile, "DATOS DESPUÉS DEL UPDATE:\n" . print_r($updated, true) . "\n\n", FILE_APPEND);
+        // --- TELEGRAM AUTO ---
+        $this->notifyTelegram($id);
 
         $_SESSION['success'] = 'Software actualizado exitosamente';
         $this->redirect('/admin/software');
@@ -887,6 +913,9 @@ class AdminController extends Controller
         // Configuraciones de tipo checkbox (si no están en POST, se guardan como 0)
         $aiEnabled = isset($_POST['setting_ai_enabled']) ? '1' : '0';
         $settingsModel->set('ai_enabled', $aiEnabled);
+
+        $telegramEnabled = isset($_POST['setting_telegram_enabled']) ? '1' : '0';
+        $settingsModel->set('telegram_enabled', $telegramEnabled);
         
         $dynamicActive = isset($_POST['setting_home_hero_dynamic_active']) ? '1' : '0';
         $settingsModel->set('home_hero_dynamic_active', $dynamicActive);
@@ -1188,7 +1217,7 @@ class AdminController extends Controller
         $db = \App\Database::getInstance()->getConnection();
         
         $stmt = $db->query("
-            SELECT p.*, c.name as category_name, u.name as author_name 
+            SELECT p.*, c.name as category_name, u.username as author_name 
             FROM blog_posts p 
             LEFT JOIN blog_categories c ON p.blog_category_id = c.id
             LEFT JOIN users u ON p.author_id = u.id
@@ -1244,13 +1273,16 @@ class AdminController extends Controller
             $imgPath = $this->uploadFile($_FILES['image'], 'blog');
         }
 
+        $seoTitle = trim($_POST['seo_title'] ?? '');
+        $seoDescription = trim($_POST['seo_description'] ?? '');
+
         $stmt = $db->prepare("
             INSERT INTO blog_posts 
-            (blog_category_id, title, slug, extract, content, image, is_featured, author_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (blog_category_id, title, slug, extract, content, image, is_featured, author_id, seo_title, seo_description) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
-        if ($stmt->execute([$categoryId, $title, $slug, $extract, $content, $imgPath, $isFeatured, $authorId])) {
+        if ($stmt->execute([$categoryId, $title, $slug, $extract, $content, $imgPath, $isFeatured, $authorId, $seoTitle, $seoDescription])) {
             $_SESSION['success'] = 'Artículo creado exitosamente';
         } else {
             $_SESSION['error'] = 'Error al crear el artículo';
@@ -1319,6 +1351,9 @@ class AdminController extends Controller
             }
         }
 
+        $seoTitle = trim($_POST['seo_title'] ?? '');
+        $seoDescription = trim($_POST['seo_description'] ?? '');
+
         $stmt = $db->prepare("
             UPDATE blog_posts SET 
             blog_category_id = ?, 
@@ -1327,11 +1362,13 @@ class AdminController extends Controller
             extract = ?, 
             content = ?, 
             image = ?, 
-            is_featured = ?
+            is_featured = ?,
+            seo_title = ?,
+            seo_description = ?
             WHERE id = ?
         ");
 
-        if ($stmt->execute([$categoryId, $title, $slug, $extract, $content, $imgPath, $isFeatured, $id])) {
+        if ($stmt->execute([$categoryId, $title, $slug, $extract, $content, $imgPath, $isFeatured, $seoTitle, $seoDescription, $id])) {
             $_SESSION['success'] = 'Artículo actualizado exitosamente';
         } else {
             $_SESSION['error'] = 'Error al actualizar el artículo';
@@ -1428,11 +1465,160 @@ class AdminController extends Controller
                 }
             }
 
-            $_SESSION['success'] = '¡Sistema actualizado con éxito!';
+            // 3. Resetear OPcache si existe
+            if (function_exists('opcache_reset')) {
+                opcache_reset();
+            }
+
+            $_SESSION['success'] = '¡Sistema actualizado con éxito! (Archivos y Cache actualizados)';
         } else {
             $_SESSION['error'] = 'Error al abrir el archivo ZIP. Asegúrate de que esté comprimido correctamente.';
         }
 
         $this->redirect('/admin/updates');
+    }
+
+    /**
+     * Envía notificaciones a Canal y a Suscriptores Individuales
+     */
+    private function notifyTelegram($softwareId)
+    {
+        try {
+            $settingsModel = new \App\Models\SiteSetting();
+            $enabled = $settingsModel->get('telegram_enabled', '0') === '1';
+            $token = $settingsModel->get('telegram_bot_token');
+            $channel = $settingsModel->get('telegram_channel');
+
+            if (!$enabled || empty($token)) {
+                $statusMsg = date('Y-m-d H:i:s') . " - Telegram Notification Skipped: Enabled=$enabled, Token=" . (empty($token) ? 'EMPTY' : 'OK');
+                file_put_contents(BASE_PATH . '/storage/logs/debug.log', $statusMsg . "\n", FILE_APPEND);
+                return false;
+            }
+
+            $software = $this->softwareModel->find($softwareId);
+            if (!$software) return false;
+
+            $name = $software['name'];
+            $version = $software['version'];
+            $url = url('software/' . $software['slug']);
+            
+            // Priority: Featured Image > Icon > Null
+            $imagePath = !empty($software['image']) ? $software['image'] : (!empty($software['icon']) ? $software['icon'] : null);
+            $imageUrl = null;
+            
+            if ($imagePath) {
+                $imageUrl = (strpos($imagePath, 'http') === 0) ? $imagePath : url($imagePath);
+            }
+
+            // Mensaje Base
+            $caption = "🚀 *¡NUEVA ACTUALIZACIÓN!*\n\n" .
+                      "🔥 *{$name} " . ($version ? "v$version" : "") . "*\n\n" .
+                      "📥 [Ver y Descargar Aquí]({$url})";
+
+            // 1. Enviar al Canal Público si está configurado
+            if (!empty($channel)) {
+                $this->sendTgMessage($token, $imageUrl ? "sendPhoto" : "sendMessage", [
+                    'chat_id' => $channel,
+                    ($imageUrl ? 'photo' : 'text') => ($imageUrl ?: $caption),
+                    'caption' => ($imageUrl ? $caption : null),
+                    'parse_mode' => 'Markdown'
+                ]);
+            }
+
+            // 2. Enviar a Suscriptores Individuales (Mensaje Privado)
+            $db = \App\Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT chat_id FROM software_subscriptions WHERE software_id = ?");
+            $stmt->execute([$softwareId]);
+            $subscribers = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            $logMsg = date('Y-m-d H:i:s') . " - Telegram Notification for ID $softwareId: Found " . count($subscribers) . " subscribers. IDs: " . implode(', ', $subscribers);
+            file_put_contents(BASE_PATH . '/storage/logs/debug.log', $logMsg . "\n", FILE_APPEND);
+
+            if ($subscribers) {
+                foreach ($subscribers as $chatId) {
+                    $method = $imageUrl ? "sendPhoto" : "sendMessage";
+                    $payload = [
+                        'chat_id' => $chatId,
+                        ($imageUrl ? 'photo' : 'text') => ($imageUrl ?: $caption),
+                        'caption' => ($imageUrl ? $caption : null),
+                        'parse_mode' => 'Markdown'
+                    ];
+                    
+                    $response = $this->sendTgMessage($token, $method, $payload);
+                    
+                    // Fallback a mensaje de texto si falla la imagen
+                    if ($imageUrl && (!$response || isset($response['ok']) && $response['ok'] === false)) {
+                        error_log("Telegram Error: Image send failed for $chatId, falling back to text.");
+                        $this->sendTgMessage($token, "sendMessage", [
+                            'chat_id' => $chatId,
+                            'text' => $caption,
+                            'parse_mode' => 'Markdown'
+                        ]);
+                    }
+                }
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            error_log("Error Telegram: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function downloadRemoteFile($url, $folder)
+    {
+        if (empty($url)) return null;
+        
+        $extension = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION);
+        if (empty($extension)) $extension = 'webp'; 
+        
+        // Clean extension from query strings
+        $extension = explode('?', $extension)[0];
+        if (strlen($extension) > 4) $extension = 'webp';
+        
+        $filename = uniqid() . '.' . $extension;
+        $dir = BASE_PATH . '/public/uploads/' . $folder;
+        $path = $dir . '/' . $filename;
+        
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        
+        $content = @file_get_contents($url);
+        if ($content === false) return null;
+        
+        if (file_put_contents($path, $content)) {
+            return 'uploads/' . $folder . '/' . $filename;
+        }
+        
+        return null;
+    }
+
+    private function sendTgMessage($token, $method, $data)
+    {
+        $apiUrl = "https://api.telegram.org/bot{$token}/{$method}";
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $result = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            $errLog = date('Y-m-d H:i:s') . " - Telegram CURL Error: " . $error;
+            file_put_contents(BASE_PATH . '/storage/logs/debug.log', $errLog . "\n", FILE_APPEND);
+            return null;
+        }
+        
+        $response = json_decode($result, true);
+        if (!$response || (isset($response['ok']) && $response['ok'] === false)) {
+            $respLog = date('Y-m-d H:i:s') . " - Telegram API Response Error: " . ($result ?: 'Empty result');
+            file_put_contents(BASE_PATH . '/storage/logs/debug.log', $respLog . "\n", FILE_APPEND);
+        }
+        
+        return $response;
     }
 }

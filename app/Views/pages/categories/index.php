@@ -1,26 +1,6 @@
 <?php 
-// Helper Icon Mapping (Podría ir en un helper global, pero lo definimos aquí por simplicidad)
-$get_category_icon = function($slug) {
-    $icons = [
-        'antivirus' => 'fa-shield-alt',
-        'navegadores' => 'fa-globe',
-        'multimedia' => 'fa-play-circle',
-        'utilidades' => 'fa-cog',
-        'productividad' => 'fa-briefcase',
-        'juegos' => 'fa-gamepad',
-        'desarrollo' => 'fa-code',
-        'educacion' => 'fa-graduation-cap',
-        'comunicacion' => 'fa-comments',
-        'diseno' => 'fa-palette',
-        'seguridad' => 'fa-lock',
-        'sistema' => 'fa-desktop'
-    ];
-    $slug = strtolower($slug);
-    foreach($icons as $key => $val) {
-        if(strpos($slug, $key) !== false) return $val;
-    }
-    return 'fa-folder';
-};
+// Las categorías ya vienen con el icono de la base de datos si existe
+
 
 $title = 'Categorías - SoftHub';
 $description = 'Explora nuestra colección de software premium organizado por categorías.';
@@ -79,7 +59,7 @@ ob_start();
 
                         <div class="flex items-start justify-between mb-8 relative z-10">
                             <div class="w-16 h-16 bg-white/80 dark:bg-gray-700/80 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-white dark:border-gray-600 group-hover:rotate-6 transition-transform duration-300">
-                                <i class="fas <?= $get_category_icon($cat['slug']) ?> <?= $theme['text'] ?>"></i>
+                                <i class="<?= get_category_icon($cat) ?> <?= $theme['text'] ?>"></i>
                             </div>
                             <span class="bg-white/60 dark:bg-gray-700/60 px-4 py-1.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-300 border border-white/60 dark:border-gray-600/60 shadow-sm backdrop-blur-md">
                                 <?= $cat['software_count'] ?? 0 ?> apps

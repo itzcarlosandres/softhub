@@ -327,7 +327,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     </script>
 
-    
+
+    <!-- Telegram Floating Button -->
+    <?php 
+    $tgChannel = (new \App\Models\SiteSetting())->get('telegram_channel', '');
+    if (!empty($tgChannel)): 
+        $tgLink = str_starts_with($tgChannel, 'http') ? $tgChannel : 'https://t.me/' . ltrim($tgChannel, '@');
+    ?>
+    <a href="<?= $tgLink ?>" target="_blank" class="fixed bottom-6 right-6 z-[9999] group flex items-center gap-3">
+        <span class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-2 rounded-full shadow-2xl border border-gray-100 dark:border-gray-700 font-bold text-sm opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-300 pointer-events-none whitespace-nowrap">
+            Únete a Telegram
+        </span>
+        <div class="w-14 h-14 bg-[#229ED9] text-white rounded-full flex items-center justify-center shadow-[0_8px_30px_rgb(34,158,217,0.3)] hover:scale-110 active:scale-95 transition-all duration-300 relative">
+            <i class="fab fa-telegram-plane text-2xl"></i>
+            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white dark:border-gray-900 rounded-full animate-bounce"></span>
+        </div>
+    </a>
+    <?php endif; ?>
+
     <!-- Últimos agregados -->
     <section class="mb-16">
         <div class="mb-10 relative z-10">
@@ -373,6 +390,96 @@ document.addEventListener('DOMContentLoaded', () => {
             <?php endif; ?>
         </div>
     </section>
+
+    <!-- Recién Actualizados (Propuesta 1: Glassmorphism List - Optimized) -->
+    <?php if (!empty($recentlyUpdated)): ?>
+    <section class="mb-12 md:mb-16">
+        <div class="mb-6 md:mb-8 relative z-10">
+            <div class="flex items-center gap-4 md:gap-6">
+                <h2 class="text-lg md:text-xl font-extrabold text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-sync-alt text-blue-500 text-lg animate-spin-slow"></i>
+                    <?= __('recently_updated', 'Recién Actualizados') ?>
+                </h2>
+                <div class="h-px w-full bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+            </div>
+        </div>
+        
+        <div id="recently-updated-container" class="max-w-5xl mx-auto space-y-3 md:space-y-4">
+            <?php foreach($recentlyUpdated as $index => $soft): ?>
+            <div onclick="window.location='<?= url('software/' . htmlspecialchars($soft['slug'])) ?>'" 
+                 class="recent-update-item <?= $index >= 5 ? 'hidden' : '' ?> bg-white/70 dark:bg-[#1a1d24]/60 backdrop-blur-xl border border-gray-100 dark:border-white/5 p-3 md:p-4 rounded-2xl flex items-center justify-between hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all group cursor-pointer animate-fade-in"
+                 style="animation-delay: <?= $index * 0.05 ?>s">
+                
+                <div class="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div class="relative">
+                        <?php if (!empty($soft['icon'])): ?>
+                            <img src="<?= url(htmlspecialchars($soft['icon'])) ?>" class="w-12 h-12 md:w-14 md:h-14 rounded-xl object-contain bg-white dark:bg-gray-800 p-1.5 shadow-sm" alt="<?= htmlspecialchars($soft['name']) ?>">
+                        <?php else: ?>
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-cube text-gray-300 text-xl"></i>
+                            </div>
+                        <?php endif; ?>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white dark:border-[#1a1d24] flex items-center justify-center">
+                            <i class="fas fa-arrow-up text-[8px] text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-gray-900 dark:text-white text-sm md:text-base truncate group-hover:text-blue-500 transition-colors"><?= htmlspecialchars($soft['name']) ?></h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="bg-blue-500/10 text-blue-500 text-[10px] md:text-[11px] font-black px-2 py-0.5 rounded-lg border border-blue-500/10">
+                                v<?= htmlspecialchars($soft['version'] ?? '1.0') ?>
+                            </span>
+                            <span class="text-gray-400 text-[10px] md:text-[11px] font-medium flex items-center gap-1">
+                                <i class="far fa-clock"></i>
+                                <?= time_elapsed_string($soft['updated_at']) ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ml-4 flex items-center gap-3">
+                    <span class="hidden md:inline-flex bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 text-[10px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider">
+                        <?= __('update_available', 'Actualizado') ?>
+                    </span>
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if (count($recentlyUpdated) > 5): ?>
+        <div class="mt-8 flex justify-center">
+            <button onclick="showMoreUpdates(this)" class="group flex items-center gap-3 bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-8 py-3 rounded-2xl text-gray-600 dark:text-gray-300 font-bold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-xl shadow-gray-200/20 dark:shadow-none">
+                <span><?= __('show_more', 'Ver más actualizaciones') ?></span>
+                <i class="fas fa-chevron-down text-xs group-hover:translate-y-1 transition-transform"></i>
+            </button>
+        </div>
+        <?php endif; ?>
+    </section>
+    
+    <script>
+        if (typeof showMoreUpdates !== 'function') {
+            function showMoreUpdates(btn) {
+                const items = document.querySelectorAll('.recent-update-item.hidden');
+                items.forEach(item => {
+                    item.classList.remove('hidden');
+                    item.classList.add('flex');
+                });
+                btn.parentElement.remove(); // Quitar el botón
+            }
+        }
+    </script>
+    
+    <style>
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.4s ease forwards; }
+    </style>
+    <?php endif; ?>
     
         </div>
         <!-- End Main Content Column -->

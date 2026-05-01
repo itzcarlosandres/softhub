@@ -13,6 +13,8 @@ if (!empty($soft['updated_at'])) {
 }
 
 $isPremium = !empty($soft['price']) && $soft['price'] > 0;
+$threshold = $popularThreshold ?? 500;
+$isPopular = ($soft['downloads'] ?? 0) > $threshold;
 $color = $color ?? 'blue';
 ?>
 <a href="<?= url('software/' . $soft['slug']) ?>" class="software-list-item group flex flex-col sm:flex-row items-start sm:items-center p-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/60 hover:border-blue-500 dark:hover:border-gray-500 hover:shadow-xl dark:shadow-gray-900/50 transition-all duration-300 w-full mb-4" data-card-id="list-<?= $soft['id'] ?>">
@@ -57,6 +59,9 @@ $color = $color ?? 'blue';
                 <?php endif; ?>
                 <?php if ($isUpdated): ?>
                     <span class="px-1.5 py-[1px] bg-emerald-500 text-white text-[9px] font-black rounded uppercase tracking-widest mt-0.5"><?= __('updated_badge', 'ACTUALIZADO') ?></span>
+                <?php endif; ?>
+                <?php if ($isPopular): ?>
+                    <span class="px-1.5 py-[1px] bg-blue-600 text-white text-[9px] font-black rounded uppercase tracking-widest mt-0.5"><?= __('popular', 'POPULAR') ?></span>
                 <?php endif; ?>
                 
                 <?php 

@@ -1,66 +1,122 @@
 <?php
+// Limpiar cualquier búfer de salida previo para evitar espacios en blanco al inicio
+if (ob_get_level()) {
+    ob_end_clean();
+}
+
 header('Content-Type: application/xml; charset=utf-8');
 
-require_once __DIR__ . '/../app/EnvLoader.php';
-require_once __DIR__ . '/../app/Database.php';
-
-EnvLoader::load(dirname(__DIR__));
-
-// Obtener el dominio base dinámicamente
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$baseUrl = $protocol . '://' . $host;
-
-// Si estamos en localhost con subdirectorio, ajustar
-if (strpos($host, 'localhost') !== false && strpos($_SERVER['REQUEST_URI'] ?? '', '/laravel/') !== false) {
-    $baseUrl .= '/laravel/public';
+// Cargar dependencias solo si no están cargadas (útil si se llama directamente o vía router)
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
 }
+
+require_once BASE_PATH . '/app/EnvLoader.php';
+require_once BASE_PATH . '/app/Database.php';
+require_once BASE_PATH . '/app/helpers.php';
+
+EnvLoader::load(BASE_PATH);
 
 // Conectar a BD
 try {
     $db = \App\Database::getInstance()->getConnection();
 } catch(Exception $e) {
     // Si falla la BD, mostrar sitemap básico
-    echo '<?xml version="1.0" encoding="UTF-8"?>';
-    echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-    echo '<url><loc>' . htmlspecialchars($baseUrl) . '</loc><priority>1.0</priority></url>';
+    echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    echo '  <url><loc>' . htmlspecialchars(url('/')) . '</loc><priority>1.0</priority></url>' . "\n";
     echo '</urlset>';
     exit;
 }
 
-echo '<?xml version="1.0" encoding="UTF-8"?>';
-echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
 // Home
-echo '<url><loc>' . htmlspecialchars($baseUrl) . '</loc><changefreq>daily</changefreq><priority>1.0</priority><lastmod>' . date('Y-m-d') . '</lastmod></url>';
+echo '  <url>' . "\n";
+echo '    <loc>' . htmlspecialchars(url('/')) . '</loc>' . "\n";
+echo '    <changefreq>daily</changefreq>' . "\n";
+echo '    <priority>1.0</priority>' . "\n";
+echo '    <lastmod>' . date('Y-m-d') . '</lastmod>' . "\n";
+echo '  </url>' . "\n";
 
-// Páginas estáticas
-echo '<url><loc>' . htmlspecialchars($baseUrl . '/categories') . '</loc><changefreq>daily</changefreq><priority>0.9</priority></url>';
-echo '<url><loc>' . htmlspecialchars($baseUrl . '/software') . '</loc><changefreq>daily</changefreq><priority>0.9</priority></url>';
+// Páginas estáticas principales
+$statics = [
+    '/about' => '0.5',
+    '/terms' => '0.3',
+    '/privacy' => '0.3',
+    '/dmca' => '0.3',
+    '/contact' => '0.5',
+    '/categories' => '0.9',
+    '/software' => '0.9',
+    '/blog' => '0.9'
+];
 
-// Categorías
+foreach ($statics as $uri => $prio) {
+    echo '  <url>' . "\n";
+    echo '    <loc>' . htmlspecialchars(url($uri)) . '</loc>' . "\n";
+    echo '    <changefreq>weekly</changefreq>' . "\n";
+    echo '    <priority>' . $prio . '</priority>' . "\n";
+    echo '  </url>' . "\n";
+}
+
+// Categorías de Software
 try {
     $cats = $db->query("SELECT slug, updated_at FROM categories ORDER BY name")->fetchAll();
     foreach ($cats as $cat) {
-        $catUrl = $baseUrl . '/category/' . urlencode($cat['slug']);
-        $lastmod = date('Y-m-d', strtotime($cat['updated_at']));
-        echo '<url><loc>' . htmlspecialchars($catUrl) . '</loc><changefreq>weekly</changefreq><priority>0.8</priority><lastmod>' . $lastmod . '</lastmod></url>';
+        $catUrl = url('/category/' . $cat['slug']);
+        $lastmod = !empty($cat['updated_at']) ? date('Y-m-d', strtotime($cat['updated_at'])) : date('Y-m-d');
+        echo '  <url>' . "\n";
+        echo '    <loc>' . htmlspecialchars($catUrl) . '</loc>' . "\n";
+        echo '    <changefreq>weekly</changefreq>' . "\n";
+        echo '    <priority>0.8</priority>' . "\n";
+        echo '    <lastmod>' . $lastmod . '</lastmod>' . "\n";
+        echo '  </url>' . "\n";
     }
-} catch (Exception $e) {
-    // Continuar sin categorías
-}
+} catch (Exception $e) {}
 
-// Software
+// Software (Programas)
 try {
-    $soft = $db->query("SELECT slug, updated_at FROM software WHERE status = 'approved' ORDER BY created_at DESC LIMIT 1000")->fetchAll();
+    $soft = $db->query("SELECT slug, updated_at, created_at FROM software WHERE status = 'approved' ORDER BY updated_at DESC LIMIT 5000")->fetchAll();
     foreach ($soft as $s) {
-        $softUrl = $baseUrl . '/software/' . urlencode($s['slug']);
-        $lastmod = date('Y-m-d', strtotime($s['updated_at']));
-        echo '<url><loc>' . htmlspecialchars($softUrl) . '</loc><changefreq>weekly</changefreq><priority>0.9</priority><lastmod>' . $lastmod . '</lastmod></url>';
+        $softUrl = url('/software/' . $s['slug']);
+        $dateSource = !empty($s['updated_at']) ? $s['updated_at'] : (!empty($s['created_at']) ? $s['created_at'] : 'now');
+        $lastmod = date('Y-m-d', strtotime($dateSource));
+        echo '  <url>' . "\n";
+        echo '    <loc>' . htmlspecialchars($softUrl) . '</loc>' . "\n";
+        echo '    <changefreq>weekly</changefreq>' . "\n";
+        echo '    <priority>0.9</priority>' . "\n";
+        echo '    <lastmod>' . $lastmod . '</lastmod>' . "\n";
+        echo '  </url>' . "\n";
     }
-} catch (Exception $e) {
-    // Continuar sin software
-}
+} catch (Exception $e) {}
+
+// Blog Categories
+try {
+    $blogCats = $db->query("SELECT slug FROM blog_categories ORDER BY name")->fetchAll();
+    foreach ($blogCats as $bc) {
+        echo '  <url>' . "\n";
+        echo '    <loc>' . htmlspecialchars(url('/blog/category/' . $bc['slug'])) . '</loc>' . "\n";
+        echo '    <changefreq>weekly</changefreq>' . "\n";
+        echo '    <priority>0.7</priority>' . "\n";
+        echo '  </url>' . "\n";
+    }
+} catch (Exception $e) {}
+
+// Blog Posts (Artículos)
+try {
+    $posts = $db->query("SELECT slug, created_at FROM blog_posts ORDER BY created_at DESC LIMIT 1000")->fetchAll();
+    foreach ($posts as $p) {
+        $postUrl = url('/blog/' . $p['slug']);
+        $lastmod = date('Y-m-d', strtotime($p['created_at']));
+        echo '  <url>' . "\n";
+        echo '    <loc>' . htmlspecialchars($postUrl) . '</loc>' . "\n";
+        echo '    <changefreq>monthly</changefreq>' . "\n";
+        echo '    <priority>0.8</priority>' . "\n";
+        echo '    <lastmod>' . $lastmod . '</lastmod>' . "\n";
+        echo '  </url>' . "\n";
+    }
+} catch (Exception $e) {}
 
 echo '</urlset>';
-?>
+exit;

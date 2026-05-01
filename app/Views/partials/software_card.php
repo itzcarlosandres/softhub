@@ -6,6 +6,8 @@ $isNew = !empty($soft['created_at']) ? strtotime($soft['created_at']) > strtotim
 $isUpdated = !empty($soft['badge_updated']) && $soft['badge_updated'] == 1;
 
 $isPremium = !empty($soft['price']) && $soft['price'] > 0;
+$threshold = $popularThreshold ?? 500;
+$isPopular = ($soft['downloads'] ?? 0) > $threshold;
 // Default to blue if $color is not provided
 $color = $color ?? 'blue';
 ?>
@@ -133,6 +135,12 @@ $color = $color ?? 'blue';
                 <div class="absolute top-3 left-3 flex flex-col gap-2 z-20 pointer-events-none">
                     <span class="px-2 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-[10px] font-extrabold shadow-lg flex items-center gap-1 uppercase tracking-wide">
                         <i class="fas fa-fire text-[10px]"></i> <?= __('hot', 'HOT') ?>
+                    </span>
+                </div>
+            <?php elseif ($showBadges && $isPopular): ?>
+                <div class="absolute top-3 left-3 flex flex-col gap-2 z-20 pointer-events-none">
+                    <span class="px-2 py-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full text-[10px] font-extrabold shadow-lg flex items-center gap-1 uppercase tracking-wide">
+                        <i class="fas fa-chart-line text-[10px]"></i> <?= __('popular', 'POPULAR') ?>
                     </span>
                 </div>
             <?php endif; ?>

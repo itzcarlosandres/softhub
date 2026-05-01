@@ -15,14 +15,7 @@
     <meta name="googlebot" content="index, follow">
     <meta name="language" content="<?= $currentLang ?>">
     
-    <!-- Multi-Language Support (SEO) -->
-    <?php
-    $currentUri = $_SERVER['REQUEST_URI'] ?? '';
-    $cleanUri = strtok($currentUri, '?');
-    ?>
-    <link rel="alternate" hreflang="es" href="<?= url('lang/es') ?>?redirect=<?= urlencode($currentUri) ?>">
-    <link rel="alternate" hreflang="en" href="<?= url('lang/en') ?>?redirect=<?= urlencode($currentUri) ?>">
-    <link rel="alternate" hreflang="x-default" href="<?= url('lang/es') ?>?redirect=<?= urlencode($currentUri) ?>">
+    <!-- Soporte Multi-idioma (SEO): Se eliminan hreflang dinámicos que apuntan a rutas de redirección para evitar indexación incorrecta -->
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -42,6 +35,10 @@
     <meta name="twitter:image" content="<?= $image ?? url('assets/images/twitter-card.jpg') ?>">
     
     <!-- Canonical URL -->
+    <?php
+    $currentUri = $_SERVER['REQUEST_URI'] ?? '';
+    $cleanUri = strtok($currentUri, '?');
+    ?>
     <link rel="canonical" href="<?= url($cleanUri) ?>">
     
     <!-- Favicon -->
@@ -87,8 +84,15 @@
     <!-- Tailwind CSS (Debe ser síncrono para evitar FOUC) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Check for saved user preference or system preference
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        <?php $defaultTheme = $settingsModel->get('default_theme', 'system'); ?>
+        const defaultTheme = "<?= $defaultTheme ?>";
+        
+        // Check for saved user preference or system preference/default setting
+        if (
+            localStorage.theme === 'dark' || 
+            (!('theme' in localStorage) && defaultTheme === 'dark') || 
+            (!('theme' in localStorage) && defaultTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ) {
             document.documentElement.classList.add('dark')
         } else {
             document.documentElement.classList.remove('dark')
@@ -568,8 +572,8 @@
         },
         "aggregateRating": {
             "@type": "AggregateRating",
-            "ratingValue": "<?= $software['rating'] ?? 4.5 ?>",
-            "ratingCount": "<?= $software['rating_count'] ?? 0 ?>",
+            "ratingValue": "<?= max(1, min(5, floatval($software['rating'] ?? 5))) ?>",
+            "ratingCount": "<?= max(1, intval($software['rating_count'] ?? 1)) ?>",
             "bestRating": "5",
             "worstRating": "1"
         },
@@ -589,6 +593,7 @@
             <div class="px-2 sm:px-4 py-2 flex items-center justify-between">
                 <?php
                 $logo = $settingsModel->get('site_logo');
+                $logoHeight = $settingsModel->get('logo_height', '40');
                 $siteName = $settingsModel->get('site_name', 'SoftHub');
                 $logoType = $settingsModel->get('logo_type', 'image'); // 'image' or 'text'
                 $logoText1 = $settingsModel->get('logo_text_1', 'Soft');
@@ -601,17 +606,18 @@
                     <a href="<?= url() ?>" class="flex items-center gap-3 group flex-shrink-0">
                         <?php if ($logoType == 'text'): ?>
                             <!-- OPTION 1: GLASSMORPHISM & CENTERED (Icon + Text) -->
-                            <div class="relative w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                            <div class="relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 overflow-hidden group-hover:scale-105 transition-transform duration-300" 
+                                 style="width: <?= $logoHeight ?>px; height: <?= $logoHeight ?>px;">
                                 <?php if (!empty($logoIconClass) && $logoIconClass !== 'fas fa-cube'): ?>
-                                    <i class="<?= htmlspecialchars($logoIconClass) ?> text-lg"></i>
+                                    <i class="<?= htmlspecialchars($logoIconClass) ?>" style="font-size: <?= $logoHeight * 0.5 ?>px;"></i>
                                 <?php elseif ($logo): ?>
-                                    <img src="<?= url($logo) ?>" alt="Icon" class="h-5 w-5 object-contain brightness-0 invert">
+                                    <img src="<?= url($logo) ?>" alt="Icon" class="object-contain brightness-0 invert" style="height: <?= $logoHeight * 0.5 ?>px; width: <?= $logoHeight * 0.5 ?>px;">
                                 <?php else: ?>
-                                    <i class="fas fa-cube text-lg"></i>
+                                    <i class="fas fa-cube" style="font-size: <?= $logoHeight * 0.5 ?>px;"></i>
                                 <?php endif; ?>
                             </div>
                             <div class="flex flex-col justify-center">
-                                <div class="text-xl font-bold leading-none tracking-tight">
+                                <div class="font-bold leading-none tracking-tight" style="font-size: <?= $logoHeight * 0.45 ?>px;">
                                     <span class="text-gray-900 dark:text-white transition-colors"><?= htmlspecialchars($logoText1) ?></span><span class="text-blue-600 dark:text-blue-400 transition-colors"><?= htmlspecialchars($logoText2) ?></span>
                                 </div>
                             </div>
@@ -620,13 +626,15 @@
                             <?php if ($logo): ?>
                                 <img src="<?= url($logo) ?>?v=<?= time() ?>" 
                                      alt="<?= htmlspecialchars($siteName) ?>" 
-                                     class="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-300">
+                                     class="w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                                     style="height: <?= $logoHeight ?>px;">
                             <?php else: ?>
                                 <div class="flex items-center gap-2">
-                                    <div class="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                                        <i class="<?= htmlspecialchars($logoIconClass) ?>"></i>
+                                    <div class="bg-gray-900 rounded-xl flex items-center justify-center text-white font-bold"
+                                         style="width: <?= $logoHeight ?>px; height: <?= $logoHeight ?>px;">
+                                        <i class="<?= htmlspecialchars($logoIconClass) ?>" style="font-size: <?= $logoHeight * 0.5 ?>px;"></i>
                                     </div>
-                                    <span class="text-xl font-bold text-gray-900 dark:text-white"><?= htmlspecialchars($siteName) ?></span>
+                                    <span class="font-bold text-gray-900 dark:text-white" style="font-size: <?= $logoHeight * 0.45 ?>px;"><?= htmlspecialchars($siteName) ?></span>
                                 </div>
                             <?php endif; ?>
                         <?php endif; ?>
@@ -662,10 +670,10 @@
                         </button>
                         <div class="absolute right-0 top-full mt-2 w-32 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover/lang:opacity-100 group-hover/lang:visible transition-all duration-200 z-[100] transform origin-top-right group-hover/lang:translate-y-0 translate-y-2">
                             <div class="p-2 space-y-1">
-                                <a href="<?= url('lang/es') ?>" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'es' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
+                                <a href="<?= url('lang/es') ?>" rel="nofollow" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'es' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
                                     <span class="w-5 text-center">🇪🇸</span> Español
                                 </a>
-                                <a href="<?= url('lang/en') ?>" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'en' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
+                                <a href="<?= url('lang/en') ?>" rel="nofollow" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 text-sm font-medium transition-colors <?= get_language() == 'en' ? 'text-blue-600 bg-blue-50/50 dark:bg-blue-900/20' : 'text-gray-600 dark:text-gray-300' ?>">
                                     <span class="w-5 text-center">🇺🇸</span> English
                                 </a>
                             </div>
@@ -677,11 +685,7 @@
                         <i class="fas fa-search"></i>
                     </button>
 
-                    <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="w-10 h-10 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
-                        <i id="theme-icon" class="far fa-moon"></i>
-                    </button>
-                    
+
                     <div class="h-6 w-px bg-gray-200 dark:bg-gray-600 hidden sm:block"></div>
 
                     <!-- Mobile Menu -->
@@ -699,8 +703,8 @@
             </div>
         </header>
     </div>
-    <!-- Spacer -->
-    <div class="h-16 md:h-20"></div>
+    <!-- Spacer (Dynamic based on logo height to prevent overlap) -->
+    <div style="height: <?= ($logoHeight + 24) ?>px;"></div>
         
     <!-- Menú Móvil (Slide-in desde la izquierda) -->
     <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden lg:hidden">
@@ -739,10 +743,10 @@
                 <div class="pt-4 border-t border-gray-100 mt-4 overflow-hidden">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-2"><?= __('change_language', 'Cambiar Idioma') ?></p>
                     <div class="grid grid-cols-2 gap-2">
-                        <a href="<?= url('lang/es') ?>" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'es' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
+                        <a href="<?= url('lang/es') ?>" rel="nofollow" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'es' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
                             <span>🇪🇸</span> <span class="text-xs font-bold">ES</span>
                         </a>
-                        <a href="<?= url('lang/en') ?>" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'en' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
+                        <a href="<?= url('lang/en') ?>" rel="nofollow" class="flex items-center justify-center gap-2 p-2 rounded-lg <?= get_language() == 'en' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600' ?> transition">
                             <span>🇺🇸</span> <span class="text-xs font-bold">EN</span>
                         </a>
                     </div>
@@ -786,41 +790,7 @@
     </div>
     
     <script>
-    // Theme Toggle Logic
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeIcon = document.getElementById('theme-icon');
 
-    // Update icon on load
-    if (document.documentElement.classList.contains('dark')) {
-        themeIcon.classList.replace('fa-moon', 'fa-sun');
-    }
-
-    themeToggleBtn.addEventListener('click', function() {
-        // toggle icons inside button
-        if(themeIcon.classList.contains('fa-moon')){
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
-        } else {
-            themeIcon.classList.replace('fa-sun', 'fa-moon');
-        }
-
-        // if set via local storage previously
-        if (localStorage.theme === 'light') {
-            document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
-        } else if (localStorage.theme === 'dark') {
-            document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
-        } else {
-            // if NOT set via local storage previously
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        }
-    });
 
     // Menú móvil
     const mobileMenuButton = document.getElementById('mobile-menu-button');

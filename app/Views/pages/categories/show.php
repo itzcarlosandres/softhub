@@ -65,7 +65,7 @@ ob_start();
         
         <div class="relative z-10 px-8 py-10 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8">
             <div class="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-600 flex items-center justify-center flex-shrink-0 text-blue-500 text-4xl md:text-5xl group">
-                <i class="<?= htmlspecialchars($category['icon'] ?: 'fas fa-folder') ?> transition-transform group-hover:scale-110 duration-300"></i>
+                <i class="<?= get_category_icon($category) ?> transition-transform group-hover:scale-110 duration-300"></i>
             </div>
             
             <div class="text-center md:text-left flex-1 border-b border-transparent">

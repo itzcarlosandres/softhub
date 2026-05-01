@@ -1,4 +1,9 @@
-<?php ob_start(); ?>
+<?php 
+$title = !empty($post['seo_title']) ? $post['seo_title'] : $post['title'] . ' | SoftHub';
+$description = !empty($post['seo_description']) ? $post['seo_description'] : $post['extract'];
+$image = !empty($post['image']) ? url($post['image']) : null;
+ob_start(); 
+?>
 
 <div class="bg-gray-50 dark:bg-gray-900 transition-colors pt-12 pb-24">
     <!-- Header del Artículo -->

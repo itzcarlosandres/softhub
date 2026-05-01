@@ -65,6 +65,37 @@
                     <textarea id="contentEditor" name="content"><?= htmlspecialchars($post['content'] ?? '') ?></textarea>
                 </div>
             </div>
+
+            <!-- SEO Section -->
+            <div class="glass-panel rounded-2xl border border-white/5 p-6 space-y-6">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-search text-blue-400"></i> Optimización SEO
+                    </h3>
+                    <button type="button" id="btn-generate-seo" class="text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all flex items-center gap-2">
+                        <i class="fas fa-magic"></i> Regenerar SEO con IA
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Meta Título (SEO)</label>
+                        <input type="text" name="seo_title" id="seo_title" 
+                               value="<?= htmlspecialchars($post['seo_title'] ?? '') ?>"
+                               placeholder="Ej: Los mejores programas para... | SoftHub"
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors">
+                        <p class="text-[10px] text-gray-500 mt-1">Recomendado: 50-60 caracteres.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Meta Descripción (SEO)</label>
+                        <textarea name="seo_description" id="seo_description" rows="3" 
+                                  placeholder="Escribe una descripción atractiva para los resultados de búsqueda..."
+                                  class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"><?= htmlspecialchars($post['seo_description'] ?? '') ?></textarea>
+                        <p class="text-[10px] text-gray-500 mt-1">Recomendado: 150-160 caracteres.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Right Column: Sidebar -->
@@ -181,6 +212,45 @@ document.getElementById('btn-generate-content')?.addEventListener('click', async
         alert("Error de conexión al generar.");
     } finally {
         this.innerHTML = '<i class="fas fa-magic text-purple-200"></i><span>Regenerar Artículo con IA (SEO)</span>';
+        this.disabled = false;
+    }
+});
+
+// AI SEO Generation Logic
+document.getElementById('btn-generate-seo')?.addEventListener('click', async function() {
+    const title = document.querySelector('input[name="title"]').value;
+    
+    if (!title) {
+        alert("Escribe un título primero.");
+        return;
+    }
+    
+    const originalContent = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    this.disabled = true;
+    
+    try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('type', 'blog_seo');
+        
+        const response = await fetch('<?= url('api/ai/generate-descriptions') ?>', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('seo_title').value = data.short || '';
+            document.getElementById('seo_description').value = data.full || '';
+        } else {
+            alert(data.error || 'Error al generar SEO');
+        }
+    } catch (error) {
+        alert("Error de conexión.");
+    } finally {
+        this.innerHTML = originalContent;
         this.disabled = false;
     }
 });

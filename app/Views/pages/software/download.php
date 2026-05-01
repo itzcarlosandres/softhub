@@ -11,9 +11,27 @@ if (!$software) {
 }
 
 // Obtener enlaces de descarga por plataforma
-$stmt = $db->prepare("SELECT * FROM download_links WHERE software_id = ? ORDER BY CASE platform WHEN 'Windows' THEN 1 WHEN 'Mac' THEN 2 WHEN 'Linux' THEN 3 WHEN 'Android' THEN 4 WHEN 'iOS' THEN 5 ELSE 6 END");
+$stmt = $db->prepare("SELECT * FROM download_links WHERE software_id = ? ORDER BY CASE platform WHEN 'Windows' THEN 1 WHEN 'Android' THEN 2 WHEN 'Torrent' THEN 3 ELSE 4 END");
 $stmt->execute([$softwareId]);
 $downloadLinks = $stmt->fetchAll();
+
+// Si no hay enlaces específicos, intentar obtener el último link de la tabla de versiones
+if (empty($downloadLinks)) {
+    $stmtFallback = $db->prepare("SELECT download_url, file_size, version_number as version FROM software_versions WHERE software_id = ? AND download_url != '' ORDER BY release_date DESC, id DESC LIMIT 1");
+    $stmtFallback->execute([$softwareId]);
+    $fallbackVer = $stmtFallback->fetch();
+    
+    if ($fallbackVer) {
+        $downloadLinks = [[
+            'id' => $softwareId,
+            'platform' => (stripos($software['name'], 'APK') !== false || stripos($fallbackVer['download_url'], '.apk') !== false) ? 'Android' : 'Windows',
+            'download_url' => $fallbackVer['download_url'],
+            'file_size' => $fallbackVer['file_size'],
+            'version' => $fallbackVer['version'],
+            'is_fallback' => true
+        ]];
+    }
+}
 
 // Generar título SEO dinámico
 $title = seo_download_title($software['name'], $software['version']);
@@ -65,10 +83,7 @@ ob_start();
                                 $isMagnet      => 'fas fa-magnet',
                                 $isTorrentFile => 'fas fa-file-arrow-down',
                                 $link['platform'] === 'Windows' => 'fab fa-windows',
-                                $link['platform'] === 'Mac'     => 'fab fa-apple',
-                                $link['platform'] === 'Linux'   => 'fab fa-linux',
                                 $link['platform'] === 'Android' => 'fab fa-android',
-                                $link['platform'] === 'iOS'     => 'fab fa-apple',
                                 default => 'fas fa-download'
                              };
 
@@ -83,8 +98,13 @@ ob_start();
                              $iconBg = $isTorrent ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-50 dark:bg-gray-900';
                              $iconColorDefault = $isTorrent ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-300';
                              $iconColorHover = $isTorrent ? 'group-hover:text-green-500' : 'group-hover:text-blue-600';
+
+                             // Si es un fallback de la tabla software_versions, generar URL directa o codificada
+                             $goUrl = isset($link['is_fallback']) 
+                                ? url('go/' . encrypt_id($software['id'])) . '?type=soft'
+                                : url('go/' . encrypt_id($link['id']));
                              ?>
-                            <a href="<?= url('go/' . encrypt_id($link['id'])) ?>" 
+                            <a href="<?= $goUrl ?>" 
                                target="_blank" rel="noopener"
                                class="flex items-center justify-between p-5 <?= $bgColor ?> rounded-2xl border <?= $borderColor ?> <?= $hoverBorder ?> <?= $hoverShadow ?> hover:shadow-lg transition-all group">
                                 <div class="flex items-center gap-4">
@@ -100,47 +120,50 @@ ob_start();
                             </a>
                         <?php endforeach; ?>
                     </div>
-                <?php else: ?>
-                    <!-- Minimal Countdown -->
-                    <?php if (!empty($software['download_url'])): ?>
-                        <div id="countdown-section" class="flex flex-col items-center">
-                            <div class="text-center mb-8">
-                                <div id="countdown" class="text-6xl font-black text-blue-600 dark:text-blue-400 mb-2"><?= (int)($countdown ?? 5) ?></div>
-                                <p class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Iniciando descarga</p>
-                            </div>
-                            
-                            <a href="<?= url('go/' . encrypt_id($software['id'])) ?>?type=soft" id="download-link"
-                               target="_blank" rel="noopener"
-                               class="inline-flex items-center justify-center gap-3 bg-black dark:bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-xl shadow-gray-200 dark:shadow-none">
-                                <i class="fas fa-download"></i> Descargar Ahora
-                            </a>
+                <?php elseif (!empty($software['download_url'])): ?>
+                    <!-- Minimal Countdown Fallback -->
+                    <div id="countdown-section" class="flex flex-col items-center">
+                        <div class="text-center mb-8">
+                            <div id="countdown" class="text-6xl font-black text-blue-600 dark:text-blue-400 mb-2"><?= (int)($countdown ?? 5) ?></div>
+                            <p class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Iniciando descarga</p>
                         </div>
                         
-                        <script>
-                        let countdown = <?= (int)($countdown ?? 5) ?>;
-                        const countdownElement = document.getElementById('countdown');
-                        const downloadLink = document.getElementById('download-link');
+                        <a href="<?= url('go/' . encrypt_id($software['id'])) ?>?type=soft" id="download-link"
+                            target="_blank" rel="noopener"
+                            class="inline-flex items-center justify-center gap-3 bg-black dark:bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition shadow-xl shadow-gray-200 dark:shadow-none">
+                            <i class="fas fa-download"></i> Descargar Ahora
+                        </a>
+                    </div>
+                    
+                    <script>
+                    let countdown = <?= (int)($countdown ?? 5) ?>;
+                    const countdownElement = document.getElementById('countdown');
+                    const downloadLink = document.getElementById('download-link');
 
-                        function updateCountdown() {
-                            countdownElement.textContent = countdown;
-                            if (countdown === 0) {
-                                countdownElement.textContent = "✓";
-                                // Crear enlace invisible y hacer clic (evita bloqueo de popups)
-                                const a = document.createElement('a');
-                                a.href = downloadLink.href;
-                                a.target = '_blank';
-                                a.rel = 'noopener';
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                            } else {
-                                countdown--;
-                                setTimeout(updateCountdown, 1000);
-                            }
+                    function updateCountdown() {
+                        countdownElement.textContent = countdown;
+                        if (countdown === 0) {
+                            countdownElement.textContent = "✓";
+                            const a = document.createElement('a');
+                            a.href = downloadLink.href;
+                            a.target = '_blank';
+                            a.rel = 'noopener';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        } else {
+                            countdown--;
+                            setTimeout(updateCountdown, 1000);
                         }
-                        setTimeout(updateCountdown, 1000);
-                        </script>
-                    <?php endif; ?>
+                    }
+                    setTimeout(updateCountdown, 1000);
+                    </script>
+                <?php else: ?>
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle text-amber-500 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Enlace no disponible</h3>
+                        <p class="text-sm text-gray-500">Estamos actualizando este enlace. Por favor, vuelve más tarde.</p>
+                    </div>
                 <?php endif; ?>
             </div>
 
